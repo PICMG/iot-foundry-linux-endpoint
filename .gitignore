@@ -1,0 +1,10 @@
+.vscode/
+.venv/
+
+endpoint
+
+include/core/
+src/core/
+tests/__pycache__/
+tools/__pycache__/
+

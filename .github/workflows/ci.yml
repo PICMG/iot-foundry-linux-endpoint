@@ -1,0 +1,82 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install system deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip build-essential
+
+      - name: Install Python requirements
+        run: |
+          python3 -m pip install --upgrade pip
+          python3 -m pip install -r tests/requirements.txt
+
+      - name: Build endpoint
+        run: make
+
+      - name: Start endpoint (background)
+        run: |
+          set -o pipefail
+          ./endpoint > endpoint.log 2>&1 & echo $! > endpoint.pid || (cat endpoint.log && exit 1)
+
+      - name: Wait for PTY
+        id: wait_pty
+        run: |
+          TIMEOUT=30
+          SEEN=0
+          for i in $(seq 1 $TIMEOUT); do
+            if grep -q "Created pty device:" endpoint.log; then
+              SEEN=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$SEEN" -ne 1 ]; then
+            echo "Endpoint did not create a PTY within $TIMEOUT seconds" >&2
+            cat endpoint.log || true
+            kill $(cat endpoint.pid) || true
+            exit 1
+          fi
+          PTYPATH=$(grep "Created pty device:" endpoint.log | tail -n1 | sed -E 's/.*: ([^[:space:]]+).*/\1/')
+          echo "pty=$PTYPATH" >> $GITHUB_OUTPUT
+
+      - name: Run MCTP tests
+        id: run_tests
+        env:
+          PTYPATH: ${{ steps.wait_pty.outputs.pty }}
+        run: |
+          echo "Using PTY: $PTYPATH"
+          python3 tests/run_mctp_tests.py "$PTYPATH" 9600
+
+      - name: Stop endpoint
+        if: always()
+        run: |
+          PID=$(cat endpoint.pid || true)
+          if [ -n "$PID" ]; then
+            kill $PID || true
+            sleep 1
+            kill -0 $PID >/dev/null 2>&1 && kill -9 $PID || true
+          fi
+          # Provide logs for debugging
+          echo "---- endpoint.log ----"
+          tail -n +1 endpoint.log || true
+
+      - name: Upload endpoint log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: endpoint-log
+          path: endpoint.log
