@@ -2,7 +2,9 @@
 CFLAGS = -std=gnu11 -g -Og -Wall -Iinclude -Iinclude/core
 
 # collect C sources from project `src/` and downloaded `src/core/`
-SRCS := $(wildcard src/*.c src/core/*.c)
+# Use deferred expansion so the `download-core` step can populate `src/core/`
+# before the wildcard is evaluated.
+SRCS = $(wildcard src/*.c src/core/*.c)
 TARGET = endpoint
 
 # fetch core sources from IoTFoundry template and place them under `core/` and `include/core/`
@@ -34,8 +36,9 @@ platform_build: download-core $(TARGET)
 
 all: download-core platform_build
 
-$(TARGET): $(SRCS)
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(SRCS)
+$(TARGET): download-core
+	# expand sources at recipe time so downloaded core files are included
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $(shell echo src/*.c src/core/*.c)
 
 clean:
 	rm -f $(TARGET) *.o 
