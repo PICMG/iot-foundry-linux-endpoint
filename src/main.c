@@ -135,6 +135,7 @@ void printUsage(const char* progName) {
  * @return int  true/false on recognized values, 0 otherwise.
  */
 static int parseBool(char* s) {
+    if (s == NULL) return 0; /* default to false when missing */
     toLower(s);
     if (strcmp(s, "true") == 0 || strcmp(s, "1") == 0 || strcmp(s, "yes") == 0) return 1;
     if (strcmp(s, "false") == 0 || strcmp(s, "0") == 0 || strcmp(s, "no") == 0) return 0;
@@ -146,7 +147,7 @@ static int parseBool(char* s) {
  * @brief Parse and validate command-line arguments.
  *
  * Uses getopt_long to accept:
- *   --tty  <tty-path>     (required)
+ *   --tty  <tty-path>     (optional)
  *   --baud <baud-string>  (optional)
  *   --hwflow <TRUE|FALSE> (optional)
  *   --help                (prints usage and returns 0)
@@ -172,17 +173,43 @@ int parseArgs(int argc, char** argv) {
     while ((opt = getopt_long(argc, argv, "t:b:f:h", longOpts, &longIndex)) != -1) {
         switch (opt) {
         case 't':
-            strncpy(serial_device.path, optarg, SERIAL_PATH_MAX - 1);
-            serial_device.path[SERIAL_PATH_MAX - 1] = '\0';
+            {
+                char *val = optarg;
+                if (!val && optind < argc && argv[optind][0] != '-') {
+                    val = argv[optind++];
+                }
+                if (val) {
+                    strncpy(serial_device.path, val, SERIAL_PATH_MAX - 1);
+                    serial_device.path[SERIAL_PATH_MAX - 1] = '\0';
+                } else {
+                    serial_device.path[0] = '\0';
+                }
+            }
             break;
         case 'b': {
-            int b = baudRateFromString(optarg); 
-            serial_device.baud = b;
+            {
+                char *val = optarg;
+                if (!val && optind < argc && argv[optind][0] != '-') {
+                    val = argv[optind++];
+                }
+                if (val) {
+                    int b = baudRateFromString(val);
+                    serial_device.baud = b;
+                }
+            }
             break;
         }
         case 'f': {
-            int pb = parseBool(optarg);
-            serial_device.hwflow = pb;
+            {
+                char *val = optarg;
+                if (!val && optind < argc && argv[optind][0] != '-') {
+                    val = argv[optind++];
+                }
+                if (val) {
+                    int pb = parseBool(val);
+                    serial_device.hwflow = pb;
+                }
+            }
             break;
         }
         case 'h':
