@@ -1,258 +1,201 @@
 /**
  * @file main.c
- * @brief Application entry for the AVR-based MCTP demo.
- *
- * Initializes platform and MCTP subsystems, then runs the main polling
- * loop which processes incoming MCTP packets.
- *
- * @author Douglas Sandy
- *
- * MIT License
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to
- * deal in the Software without restriction, including without limitation the
- * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
- * sell copies of the Software, and to permit persons to whom the Software is
- * furnished to do so.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * @brief Linux Endpoint for IoT-Foundry project
+ * This is a simple MCTP endpoint implementation for Linux.
+ * It uses MCTP over UART for communication and handles basic
+ * MCTP control messages such as Get Endpoint ID.
+ * @author Doug Sandy
+ * @date February 2026
  */
-#include <ctype.h>
-#include <errno.h>
-#include <fcntl.h>
-#include <getopt.h>
-#include <sys/stat.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <string.h>
+
 #include <stdlib.h>
-#include <signal.h>
+#include <stdio.h>
+#include <assert.h>
+#include <string.h>
+#include <sys/select.h>
 #include <termios.h>
-#include <unistd.h>
-
+#include <libmctp.h>
+#include <libmctp-serial.h>
 #include "config.h"
+#include "platform.h"
+#include "mctp_control.h"
+#include "process_pldm.h"
+#include "msgqueue.h"
+#include "platform.h"
 
-#include "core/mctp.h"
-#include "core/platform.h"
-
-#ifdef PLDM_SUPPORT
-#include "core/pldm_version.h"
+/* MIN macro */
+#ifndef MIN
+#define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
-// our configuration structure
+/* Global serial device configuration */
 config_t serial_device = {
-    .baud = 115200,
-    .hwflow = 0,
-    .path = "",
-    .fd = -1
+	.baud = B115200,
+	.hwflow = 0,
+	.path = "",
+	.fd = -1
 };
 
-/*
- * @brief Handle signals (e.g., SIGINT, SIGTERM) by setting the interrupted flag.
- *
- * @param signum  Signal number received.
- * @return void
+/* Duplicate of libmctp control header structures/macros.
+ * These are intentionally local copies for development/testing when
+ * the upstream libmctp headers are not available on the include path.
  */
-static volatile int interrupted = 0;
-void signalHandler(int signum) {
-    printf("\nCaught signal %d, cleaning up...\n", signum);
-    interrupted = 1;
+struct mctp_ctrl_msg_hdr {
+	uint8_t ic_msg_type;
+	uint8_t rq_dgram_inst;
+	uint8_t command_code;
+} __attribute__((packed));
+
+#define MCTP_CTRL_HDR_MSG_TYPE	       0
+#define MCTP_CTRL_HDR_FLAG_REQUEST     (1 << 7)
+#define MCTP_CTRL_HDR_FLAG_DGRAM       (1 << 6)
+#define MCTP_CTRL_HDR_INSTANCE_ID_MASK 0x1F
+
+#define ECHO_Q_DEPTH 4
+#define RX_BUF_SZ 256
+
+struct echo_msg {
+	uint8_t remote_eid;
+	uint8_t destination_eid;
+	bool tag_owner;
+	uint8_t msg_tag;
+	size_t len;
+	uint8_t data[RX_BUF_SZ];
+};
+
+// message queue for received echo messages
+static struct echo_msg echo_buffer[ECHO_Q_DEPTH];
+static struct msgqueue echo_q;
+
+/**
+ * @brief MCTP receive message handler
+ * Handles incoming MCTP messages by enqueueing them for processing.
+ * @param remote_eid The source endpoint ID of the message sender.
+ * @param data Pointer to user data (not used).
+ * @param msg Pointer to the full message including header.
+ * @param len Length of the message in bytes.
+ */
+static void rx_message(uint8_t remote_eid, void *data, void *msg, size_t len)
+{
+	struct echo_msg emsg;
+
+	emsg.remote_eid = remote_eid;
+	emsg.tag_owner = 0; /* will be set appropriately when replying */
+	emsg.msg_tag = 0;
+	emsg.len = MIN(len, (size_t)RX_BUF_SZ);
+	if (msg && emsg.len) {
+		memcpy(emsg.data, msg, emsg.len);
+	}
+
+	msgqueue_put(&echo_q, &emsg);
 }
 
 /**
- * @brief Maps a string like "115200" to a BaudRate enum value.
- * @param str The baud rate string (e.g., "9600", "115200").
- * @return returns the baud rate for the string, or a default if not found.
+ * @brief Main function
+ * Initializes MCTP over UART and enters the main processing loop.
  */
-int baudRateFromString(char * str) {
-    static const struct {
-        const char *name;
-        int val;
-    } baudMap[] = {
-        {"4800", B4800}, {"9600", B9600}, {"19200", B19200},
-        {"38400", B38400}, {"57600", B57600}, {"115200", B115200},
-        {"230400", B230400}, {NULL, 0}
-    };
+int main(void)
+{
+	printf("mctp_endpoint: main() start\n");
 
-    if (!str) return B115200;
-    for (const typeof(baudMap[0]) *e = baudMap; e->name != NULL; ++e) {
-        if (strcmp(str, e->name) == 0) return e->val;
-    }
-    printf("Warning: Unrecognized baud rate '%s', using default 115200.\n", str);
-    return B115200; /* default */
-}
+	// Initialize message queue
+	if (msgqueue_init(&echo_q, echo_buffer, sizeof(struct echo_msg), ECHO_Q_DEPTH) != 0) {
+		fprintf(stderr, "Failed to initialize message queue\n");
+		return 1;
+	}
 
-/**
- * @brief Print command-line usage for the program.
- *
- * @param progName  Program name (typically argv[0]) used in usage and examples.
- * @return void     Prints usage to stdout and returns.
- */
-void printUsage(const char* progName) {
-    printf("Usage: %s --tty <tty-path> [options]\n\n", progName);
+	mctp_set_alloc_ops(malloc, free, realloc);
+	
+	// initialize MCTP
+	struct mctp *mctp_ctx = mctp_init();
+	assert(mctp_ctx != NULL);
 
-    printf("Required:\n");
-    printf("  --tty  <tty-path>       Path to serial device (e.g. /dev/ttyS0, /dev/ttyUSB0).\n\n");
+	// Initialize the versions map (versions of supported MCTP message types) 
+	initialize_versions_map();
 
-    printf("Optional:\n");
-    printf("  --baud <baud-string>    Baud rate string (e.g. 9600, 115200). If omitted, default 115200 is used\n");
-    printf("  --hwflow <TRUE|FALSE>   Hardware flow control. TRUE to enable RTS/CTS, FALSE (default) to disable.\n");
-    printf("  --help                  Show this help message and exit.\n\n");
+	// Initialize platform and open serial port
+	platform_init();
 
-    printf("Examples:\n");
-    printf("  %s --tty /dev/ttyUSB0 --baud 115200 --hwflow TRUE \n", progName);
-    printf("Notes:\n");
-    printf("  - The code is blocking and will run until iterrupted with SIGINT.\n");
-    printf("\n");
-}
+	// Create and configure serial binding
+	struct mctp_binding_serial *serial = mctp_serial_init();
+	if (!serial) {
+		fprintf(stderr, "Failed to initialize MCTP serial binding\n");
+		return 1;
+	}
 
-/**
- * @brief Convert a string to lowercase.
- *
- * @param s  Input string to convert (modified copy).
- * @return void - lowercase conversion is done in place.
- */
- void toLower(char *s) {
-    while (*s) {
-        *s = tolower((unsigned char)*s);
-        s++;
-    }
-}
+	// Use the FD from platform initialization
+	extern config_t serial_device;
+	if (serial_device.fd < 0) {
+		fprintf(stderr, "Serial device not initialized\n");
+		return 1;
+	}
+	mctp_serial_open_fd(serial, serial_device.fd);
 
-/*
- * @brief Parse a boolean-like string into a boolean value.
- *
- * Accepts (case-insensitive): true/1/yes and false/0/no.
- *
- * @param s  Input string (e.g. "TRUE", "false", "1", "0").
- * @return int  true/false on recognized values, 0 otherwise.
- */
-static int parseBool(char* s) {
-    toLower(s);
-    if (strcmp(s, "true") == 0 || strcmp(s, "1") == 0 || strcmp(s, "yes") == 0) return 1;
-    if (strcmp(s, "false") == 0 || strcmp(s, "0") == 0 || strcmp(s, "no") == 0) return 0;
-    printf("Warning: Unrecognized boolean value '%s'. Using FALSE.\n", s);
-    return 0;
-}
+	// Register the serial binding with MCTP context (EID 0x00 = unconfigured)
+	struct mctp_binding *binding = mctp_binding_serial_core(serial);
+	mctp_register_bus(mctp_ctx, binding, 0x00);
+	
+	// set the default rx message handler
+	mctp_set_rx_all(mctp_ctx, rx_message, NULL);
 
-/**
- * @brief Parse and validate command-line arguments.
- *
- * Uses getopt_long to accept:
- *   --tty  <tty-path>     (required)
- *   --baud <baud-string>  (optional)
- *   --hwflow <TRUE|FALSE> (optional)
- *   --help                (prints usage and returns 0)
- *
- * On parse/validation error this function prints usage (via printUsage)
- * and returns 0.
- *
- * @param argc  Argument count.
- * @param argv  Argument vector.
- * @return int  1 on success, zero on error.
- */
-int parseArgs(int argc, char** argv) {
-    static struct option longOpts[] = {
-        {"tty",     optional_argument, NULL, 't'},
-        {"baud",    optional_argument, NULL, 'b'},
-        {"hwflow",  optional_argument, NULL, 'f'},
-        {"help",    no_argument,       NULL, 'h'},
-        {NULL, 0, NULL, 0}
-    };
+	// Initialize the PLDM processing module
+	init_pldm();
 
-    int opt;
-    int longIndex = 0;
-    while ((opt = getopt_long(argc, argv, "t:b:f:h", longOpts, &longIndex)) != -1) {
-        switch (opt) {
-        case 't':
-            strncpy(serial_device.path, optarg, SERIAL_PATH_MAX - 1);
-            serial_device.path[SERIAL_PATH_MAX - 1] = '\0';
-            break;
-        case 'b': {
-            int b = baudRateFromString(optarg); 
-            serial_device.baud = b;
-            break;
-        }
-        case 'f': {
-            int pb = parseBool(optarg);
-            serial_device.hwflow = pb;
-            break;
-        }
-        case 'h':
-        default:
-            printUsage(argv[0]);
-            return 0;
-        }
-    }
+	printf("MCTP endpoint ready on %s\n", serial_device.path);
 
-    return 1;
-}
+	// Main event loop with select()
+	int serial_fd = mctp_serial_get_fd(serial);
+	struct echo_msg em;
+	
+	while (1) {
+		fd_set readfds;
+		struct timeval tv;
+		
+		FD_ZERO(&readfds);
+		FD_SET(serial_fd, &readfds);
+		
+		// Small timeout to periodically check message queue
+		tv.tv_sec = 0;
+		tv.tv_usec = 10000; // 10ms
+		
+		int ret = select(serial_fd + 1, &readfds, NULL, NULL, &tv);
+		
+		if (ret < 0) {
+			perror("select");
+			break;
+		} else if (ret > 0 && FD_ISSET(serial_fd, &readfds)) {
+			// Data available on serial port - read and process
+			mctp_serial_read(serial);
+		}
+		
+		// Process any queued messages (non-blocking)
+		if (msgqueue_get(&echo_q, &em) == 0) {		
+			const struct mctp_ctrl_msg_hdr *hdr = (const struct mctp_ctrl_msg_hdr *)em.data;
+			if ((em.len >= sizeof(struct mctp_ctrl_msg_hdr)) && 
+				(hdr->ic_msg_type == MCTP_CTRL_HDR_MSG_TYPE)) {
+				// this is a control message - process it
+				int ret = send_control_message(mctp_ctx, em.remote_eid, em.data, em.len);
+				if (ret) {
+					printf("send_control_message failed: %d\n", ret);
+				}
+			} 
 
-/**
- * @brief Program entry point.
- *
- * This function initializes the MCTP subsystem and platform hardware,
- * then enters the main loop which repeatedly updates the MCTP framer
- * and processes any available packets. Control and PLDM packets are
- * dispatched to their respective handlers; other packets are ignored.
- *
- * @return int Returns 0 on normal termination (never reached in typical
- *             embedded runtime where main runs indefinitely).
- */
-int main(int argc, char *argv[]) {
-    signal(SIGINT, signalHandler);
-    signal(SIGTERM, signalHandler);
+            // process pldm messages if libpldm is included
+			else if ((em.len >= sizeof(struct mctp_ctrl_msg_hdr)) && 
+				(hdr->ic_msg_type == MCTP_PLDM_HDR_MSG_TYPE)) {
+				// this is a PLDM message - process it
+				handle_pldm_message(mctp_ctx, em.remote_eid, em.data, em.len);
+			}
 
-    // get command line options
-    if (!parseArgs(argc, argv)) return EXIT_FAILURE;
-
-    if (serial_device.fd > -1) {
-        printf("Using serial device: %s at baud %d, hwflow %s\n",
-               serial_device.path,
-               serial_device.baud,
-               serial_device.hwflow ? "TRUE" : "FALSE");
-    } else {
-        printf("Using simulated pty device:\n");
-    }
-
-    /* initialize the mctp subsystem (and platform)*/
-    mctp_init();
-
-    while (!interrupted) {
-        /* update the mctp framer state */
-        mctp_update();
-
-        /* process_packet */
-        if (mctp_is_packet_available()) {
-            if (mctp_is_control_packet()) {
-                mctp_process_control_message();
-            }
-#ifdef PLDM_SUPPORT
-            else if (mctp_is_pldm_packet()) {
-                pldm_process_packet();
-            }
-#endif
             else {
-                // non-control packet - drop packet
-                mctp_ignore_packet();
-            }
-        }
+				printf("unknown message type, dropping\n");
+				continue;
+			}			
+		}
+	}
 
-        /* other application tasks can be added here */
-    }
-
-    // close the file descriptor if open
-    if (serial_device.fd != -1) {
-        close(serial_device.fd);
-        serial_device.fd = -1;
-    }
-
-    return 0;
+	// Cleanup (unreachable in current infinite loop)
+	mctp_serial_destroy(serial);
+	msgqueue_destroy(&echo_q);
+	return 0;
 }

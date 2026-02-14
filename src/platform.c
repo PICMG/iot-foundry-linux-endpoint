@@ -33,7 +33,7 @@
 #ifndef _DEFAULT_SOURCE
     #define _DEFAULT_SOURCE
 #endif
-#include "core/platform.h"
+#include "platform.h"
 #include "config.h"
 #include <ctype.h>
 #include <errno.h>
@@ -46,6 +46,7 @@
 #include <stdlib.h>
 #include <sys/select.h>
 #include <sys/time.h>
+#include <time.h>
 #include <termios.h>
 #include <unistd.h>
 
@@ -134,6 +135,16 @@ void platform_init(void) {
             return;
         }
     }
+}
+
+/**
+ * @brief Zephyr compatibility: Get uptime in milliseconds
+ * @return Uptime in milliseconds since system boot
+ */
+uint32_t k_uptime_get_32(void) {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint32_t)((ts.tv_sec * 1000) + (ts.tv_nsec / 1000000));
 }
 
 /**
