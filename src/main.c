@@ -14,6 +14,8 @@
 #include <string.h>
 #include <sys/select.h>
 #include <termios.h>
+#include <unistd.h>
+#include <getopt.h>
 #include <libmctp.h>
 #include <libmctp-serial.h>
 #include "config.h"
@@ -91,11 +93,98 @@ static void rx_message(uint8_t remote_eid, void *data, void *msg, size_t len)
 }
 
 /**
+ * @brief Convert baud rate integer to termios constant
+ */
+static speed_t get_baud_constant(int baud)
+{
+	switch (baud) {
+	case 9600:   return B9600;
+	case 19200:  return B19200;
+	case 38400:  return B38400;
+	case 57600:  return B57600;
+	case 115200: return B115200;
+	case 230400: return B230400;
+	case 460800: return B460800;
+	case 500000: return B500000;
+	case 576000: return B576000;
+	case 921600: return B921600;
+	case 1000000: return B1000000;
+	case 1152000: return B1152000;
+	case 1500000: return B1500000;
+	case 2000000: return B2000000;
+	default:
+		fprintf(stderr, "Unsupported baud rate: %d, using 115200\n", baud);
+		return B115200;
+	}
+}
+
+/**
+ * @brief Print usage information
+ */
+static void print_usage(const char *progname)
+{
+	printf("Usage: %s [OPTIONS]\n", progname);
+	printf("MCTP endpoint for Linux\n\n");
+	printf("Options:\n");
+	printf("  -p, --pty              Create a pseudo-terminal (default)\n");
+	printf("  -d, --device <path>    Use specified serial device\n");
+	printf("  -b, --baud <rate>      Set baud rate (default: 115200)\n");
+	printf("                         Supported: 9600, 19200, 38400, 57600,\n");
+	printf("                                    115200, 230400, 460800, 921600\n");
+	printf("  -f, --flow-control     Enable hardware flow control (RTS/CTS)\n");
+	printf("  -h, --help             Show this help message\n");
+	printf("\nExamples:\n");
+	printf("  %s -p                      # Create pty for testing\n", progname);
+	printf("  %s -d /dev/ttyUSB0         # Use serial device\n", progname);
+	printf("  %s -d /dev/ttyUSB0 -b 9600 # Use 9600 baud\n", progname);
+	printf("  %s -d /dev/ttyUSB0 -f      # Enable flow control\n", progname);
+}
+
+/**
  * @brief Main function
  * Initializes MCTP over UART and enters the main processing loop.
  */
-int main(void)
+int main(int argc, char *argv[])
 {
+	int opt;
+	int use_pty = 1; // Default to pty
+	
+	static struct option long_options[] = {
+		{"pty", no_argument, 0, 'p'},
+		{"device", required_argument, 0, 'd'},
+		{"baud", required_argument, 0, 'b'},
+		{"flow-control", no_argument, 0, 'f'},
+		{"help", no_argument, 0, 'h'},
+		{0, 0, 0, 0}
+	};
+	
+	// Parse command-line options
+	while ((opt = getopt_long(argc, argv, "pd:b:fh", long_options, NULL)) != -1) {
+		switch (opt) {
+		case 'p':
+			use_pty = 1;
+			serial_device.path[0] = '\0'; // Empty path signals pty creation
+			break;
+		case 'd':
+			use_pty = 0;
+			strncpy(serial_device.path, optarg, SERIAL_PATH_MAX - 1);
+			serial_device.path[SERIAL_PATH_MAX - 1] = '\0';
+			break;
+		case 'b':
+			serial_device.baud = get_baud_constant(atoi(optarg));
+			break;
+		case 'f':
+			serial_device.hwflow = 1;
+			break;
+		case 'h':
+			print_usage(argv[0]);
+			return 0;
+		default:
+			print_usage(argv[0]);
+			return 1;
+		}
+	}
+	
 	printf("mctp_endpoint: main() start\n");
 
 	// Initialize message queue
@@ -194,8 +283,19 @@ int main(void)
 		}
 	}
 
-	// Cleanup (unreachable in current infinite loop)
+	// Cleanup
+	printf("\nShutting down...\n");
+	
+	// Close serial device
+	if (serial_device.fd >= 0) {
+		printf("Closing serial device fd=%d\n", serial_device.fd);
+		close(serial_device.fd);
+		serial_device.fd = -1;
+	}
+	
 	mctp_serial_destroy(serial);
 	msgqueue_destroy(&echo_q);
+	
+	printf("Shutdown complete\n");
 	return 0;
 }
