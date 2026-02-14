@@ -8,3 +8,16 @@ src/core/
 tests/__pycache__/
 tools/__pycache__/
 
+# CMake build artifacts
+build/
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# Compiled object files
+*.o
+*.so
+*.a
