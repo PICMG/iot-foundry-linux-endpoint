@@ -91,12 +91,6 @@ The compiled `endpoint` binary will be in the `build` directory.
   cmake -DPLDM_SUPPORT=OFF ..
   ```
 
-### Additional Targets
-
-- `make download-core` — Download IoTFoundry core sources (runs automatically during build)
-- `make clean-core` — Remove downloaded core sources
-- `make install` — Install the endpoint binary (default: /usr/local/bin)
-
 ## Running Device Tests
 
 Start the endpoint code on your unit under test (UUT) with the following command:
