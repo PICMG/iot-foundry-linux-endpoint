@@ -84,6 +84,32 @@ static inline int msgqueue_put(struct msgqueue *q, const void *msg)
 }
 
 /**
+ * Try to get a message from the queue (non-blocking)
+ * @param q Pointer to the message queue
+ * @param msg Pointer to buffer to receive message
+ * @return 0 on success, -1 if queue is empty
+ */
+static inline int msgqueue_tryget(struct msgqueue *q, void *msg)
+{
+    pthread_mutex_lock(&q->mutex);
+    
+    if (q->count == 0) {
+        pthread_mutex_unlock(&q->mutex);
+        return -1;
+    }
+    
+    char *src = (char *)q->buffer + (q->read_idx * q->msg_size);
+    memcpy(msg, src, q->msg_size);
+    q->read_idx = (q->read_idx + 1) % q->max_msgs;
+    q->count--;
+    
+    pthread_cond_signal(&q->cond_not_full);
+    pthread_mutex_unlock(&q->mutex);
+    
+    return 0;
+}
+
+/**
  * Get a message from the queue (blocking)
  * @param q Pointer to the message queue
  * @param msg Pointer to buffer to receive message

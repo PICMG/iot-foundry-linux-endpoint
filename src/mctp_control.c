@@ -341,6 +341,9 @@ static int process_set_endpoint_id_control_message(struct mctp *mctp, uint8_t re
     resp.eid_pool_size = 0x00;
 
     // send the response
+    for (size_t i = 0; i < sizeof(struct set_endpoint_id_response); i++) {
+        printf("%02X ", ((uint8_t *)&resp)[i]);
+    }
     mctp_message_tx(mctp, remote_eid,
                     &resp, sizeof(struct set_endpoint_id_response));        
     LOG_INF("sent Set Endpoint ID response");
