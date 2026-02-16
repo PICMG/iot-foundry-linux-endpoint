@@ -33,7 +33,7 @@
 
 **REQ 4.100**: IIoT Node shall announce its presence on the bus by sending the “Discovery Notify” command request whenever it is powered up or undergoes a reset unless the underlying MCTP binding has its own means of signaling the device appearance to the bus owner. 
 
-**REQ 4.110**: The MCTP message transfer unit shall be 64 bytes (not including header, length, and footer fields). 4.1.2 PLDM Protocol Stack
+**REQ 4.110**: The MCTP message transfer unit shall be 64 bytes (not including header, length, and footer fields). 
 
 **REQ 4.120**:  IIoT Endpoint shall implement a PLDM terminus over the associated MCTP endpoint.
 
@@ -49,7 +49,7 @@
 
 **REQ 4.180**: IIoT Endpoint shall report PLDM 000010b (PLDM for Platform Monitoring and Control) as supported in the GetPLDMTypes command response.
 
-**REQ 4.190**: IIoT Endpoint shall report PLDM type 000100b (PLDM for FRU Data) as supported in the GetPLDMTypes command response/.
+**REQ 4.190**: IIoT Endpoint shall report PLDM type 000100b (PLDM for FRU Data) as supported in the GetPLDMTypes command response.
 
 **REQ 4.200**: IIoT Endpoint shall implement PLDM for Platform Monitoring and Control commands marked as Mandatory by [DMTF-DSP0248].
 
@@ -83,13 +83,13 @@
 
 **REQ 4.350**: The MCTP Bridge shall comply with requirements applicable for MCTP Bus Owner/Bridge defined in [DMTF-DSP0236].
 
-**REQ 4.360**:  Endpoints. The MCTP bridge shall maintain static routing entries for all implemented MCTP
+**REQ 4.360**:  The MCTP bridge shall maintain static routing entries for all implemented MCTP Endpoints.
 
 **REQ 4.370**: Each IIoT Endpoint on an IIoT Node shall comply with the MCTP and PLDM requirements for an IIoT Endpoint as described in sections 4.1.1 through 4.1.2.
 
-**REQ 4.380**:  command. All IIoT Endpoints on a Physical Node shall implement Get PLDM Terminus UID
+**REQ 4.380**:  All IIoT Endpoints on a Physical Node shall implement Get PLDM Terminus UID command. 
 
-**REQ 4.390**:  Endpoint. An IIoT Endpoint shall only expose PDRs for the Logical Node associated with the
+**REQ 4.390**:  An IIoT Endpoint shall only expose PDRs for the Logical Node associated with the Endpoint.
 
 **REQ 4.400**: An IIoT Endpoint shall only accept commands for the resources associated with the PLDM terminus.
 
@@ -449,7 +449,7 @@
 |4|PID Control Error numeric Sensor|
 |5|Feedback numeric Sensor|
 
-**REQ 4.890**:  ID Sensor Description 1 Global Interlock state Sensor 2 Trigger state Sensor 3 PID OperationalState Sensor 4 PID Control Error numeric Sensor 5 Feedback numeric Sensor Sensor PDRs shall be associated with the PICMG PID Controller Entity. 4.3.5.5 Effecters The PICMG PID Controller has several required Effecters. The following requirements apply.
+**REQ 4.890**:  Sensor PDRs shall be associated with the PICMG PID Controller Entity.
 
 **REQ 4.900**:  The PID Controller shall implement a Global Interlock State Effecter.
 
@@ -719,7 +719,7 @@
 
 **REQ 4.1220**: Events that could cause transitions to ConditionStop shall be given precedence over all other conditions except those that could cause a transition to ErrorStop.
 
-**REQ 4.1230**: In all states other than Running, the Profiled Motion controller shall control the output and brake as directed by the associated configuration parameters. NOTE: The motion controller may transition back to Idle from either ConditionStop or ErrorStop, even if error conditions exist. Some error conditions (for instance, Perror), may require sending a new motion command to recover. Allowing transitions back to Idle prevents a deadlock state where an error condition exists, but it cannot be cleared. 4.3.6.6 Sensors The PICMG Profiled Motion Controller Endpoint has several Sensors. The following requirements apply.
+**REQ 4.1230**: In all states other than Running, the Profiled Motion controller shall control the output and brake as directed by the associated configuration parameters. NOTE: The motion controller may transition back to Idle from either ConditionStop or ErrorStop, even if error conditions exist. Some error conditions (for instance, Perror), may require sending a new motion command to recover. Allowing transitions back to Idle prevents a deadlock state where an error condition exists, but it cannot be cleared. 
 
 **REQ 4.1240**: The Profiled Motion Controller shall implement a Global Interlock State Sensor.
 
@@ -906,9 +906,9 @@
 |accuracy|An error component that scales linearly with the magnitude of the reading, expressed as a percentage (1.0 = 1%). |No|Numeric|
 |pins|An array of PinUse objects associated with this channel. In many cases pins may be shared between multiple channels; however, channels that share pins cannot both be configured for use since pins may only serve one function at a time.|No|Array of PinUse objects|
 
-**REQ 5.40**:  Array of PinUse objects Channel objects shall consist of the JSON structure defined in Table 36. 
+**REQ 5.40**:  Channel objects shall consist of the JSON structure defined in Table 36. 
 
-**REQ 5.50**:  Table 37. Channel type strings shall consist of one of the electrical interface type names found in 5.2.1.1 Electrical Interface types Electrical interface types supported by this specification are described in table Table 37. 
+**REQ 5.50**:  Channel type strings shall consist of one of the electrical interface type names found Table 37. 
 
 ### Table 37: Channel Electrical Interface Types
 
@@ -1108,7 +1108,7 @@
 
 **REQ 5.400**: The value of the physicalAuxUnitModifier field in IOBindings in the ControllerCapabilities object shall be null for virtual Sensors.
 
-**REQ 5.410**: The value of the physicalAuxRateUnit field in IOBindings in the ControllerCapabilities object shall be null for virtual Sensors. 5.2.4.4 Numeric Effecter IOBinding
+**REQ 5.410**: The value of the physicalAuxRateUnit field in IOBindings in the ControllerCapabilities object shall be null for virtual Sensors. 
 
 ### Table 45:  IOBinding object structure for Numeric Effecters
 
@@ -1253,7 +1253,7 @@
 
 **REQ 5.740**:  SensorDefinition objects shall consist of the structure found in Table 49.
 
-**REQ 5.750**:  Sensor JSON files shall contain one SensorDefinition object. 5.4 Numeric Effecter Json Each numeric effecter connected to the system should have an Effecter JSON file associated with it. The purpose of this file is to provide information to the configuration process regarding the effecter type, output characteristics and sensitivity. The content of this file can be provided by the effecter manufacturer, or in most cases, created from the devices’ data sheet. The structure of the file is shown in Table 50.
+**REQ 5.750**:  Sensor JSON files shall contain one SensorDefinition object. 
 
 ### Table 50:  EffecterDefinition JSON object structure
 
@@ -1294,7 +1294,7 @@
 
 **REQ 5.790**:  The ConfigFile object shall comply with the structure in Table 51.
 
-**REQ 5.800**: The structure of the Configuration object within the ConfigFile shall be the same as that of the ControllerCapabilities object defined in Section 5.2. 5.5.2 General Configuration Object Requirements The following general requirements apply to the Configuration object within the config file.
+**REQ 5.800**: The structure of the Configuration object within the ConfigFile shall be the same as that of the ControllerCapabilities object defined in Section 5.2.
 
 **REQ 5.810**: The value of the capabilities field in the config file shall match the ControllerCapabilities object associated with the associated hardware device without modification. 
 
@@ -1310,7 +1310,7 @@
 
 **REQ 5.870**: The configuration process shall not add new fields to FruRecord objects in the Configuration object if the required field of the FruRecord is set to true NOTE: The intention is that required FruRecord objects can be completed, but not augmented. If new fields are required, they may be added to a new FruRecord object.
 
-**REQ 5.880**: All FruField objects within the Configuration object in the config file shall have a non-null value for the value field. 5.5.4 Configuration Object Requirements Related To LogicalEntity Objects The following requirements apply to LogicalEntity objects within the “logicalEntities” array within the Configuration object in the config file.
+**REQ 5.880**: All FruField objects within the Configuration object in the config file shall have a non-null value for the value field.
 
 **REQ 5.890**: The Configuration object in the config file shall have at least one LogicalEntity object within its logicalEntities array.
 
