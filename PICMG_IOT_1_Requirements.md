@@ -5,10 +5,6 @@
 
 ---
 
-## Requirements and Specification Tables
-
-*Total: 301 requirements and 51 tables, interleaved by section*
-
 ### Table 2: Parameters for Trapezoidal Motion Profile
 
 | Parameter Name | Description | Typical Units |
@@ -23,7 +19,7 @@
 
 **REQ 4.30**:  IIoT Endpoint shall accept 0xFF (MCTP Base specification version) Message Type Number in the Get MCTP Version Support request, and response according to the [DMTF-DSP0236].
 
-**REQ 4.40**:  IIoT Endpoint shall accept 0x00 (MCTP Control protocol version) Message Type Number in the Get MCTP Version Support request, and response according to the [DMTF-DSP0236]. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 31
+**REQ 4.40**:  IIoT Endpoint shall accept 0x00 (MCTP Control protocol version) Message Type Number in the Get MCTP Version Support request, and response according to the [DMTF-DSP0236]. 
 
 **REQ 4.50**:  IIoT Endpoint shall accept 0x01 (PLDM over MCTP binding specification version) Message Type Number in the Get MCTP Version Support request, and response with a single Version Number Entry 0xF1F0F000.
 
@@ -35,7 +31,7 @@
 
 **REQ 4.90**:  IIoT Endpoint shall not generate any unsolicited messages unless the generation of each message type was previously enabled.
 
-**REQ 4.100**: IIoT Node shall announce its presence on the bus by sending the “Discovery Notify” command request whenever it is powered up or undergoes a reset unless the underlying MCTP binding has its own means of signaling the device appearance to the bus owner. Because of the limited memory size available on PICMG Endpoint devices, it is important to constrain the amount of space required for communications buffers. The MCTP serial binding specification currently limits the message transfer size to 64 bytes of payload. PLDM commands supported by this specification all fit within this payload size. Due to the importance of this MCTP constraint, it has been replicated here.
+**REQ 4.100**: IIoT Node shall announce its presence on the bus by sending the “Discovery Notify” command request whenever it is powered up or undergoes a reset unless the underlying MCTP binding has its own means of signaling the device appearance to the bus owner. 
 
 **REQ 4.110**: The MCTP message transfer unit shall be 64 bytes (not including header, length, and footer fields). 4.1.2 PLDM Protocol Stack
 
@@ -59,7 +55,7 @@
 
 **REQ 4.210**: IIoT Endpoint shall implement PLDM for FRU Data Specification commands marked as Mandatory by [DMTF-DSP0257].
 
-**REQ 4.220**:  IIoT Endpoints shall support reporting of events. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 32
+**REQ 4.220**:  IIoT Endpoints shall support reporting of events. 
 
 **REQ 4.230**: IIoT Endpoint should support asynchronous event message generation as defined in [DMTF-DSP0248].
 
@@ -77,11 +73,11 @@
 
 **REQ 4.300**:  IIoT Endpoint shall not expose any State Effecter Initialization PDRs.
 
-**REQ 4.310**:  IIoT Endpoint Device PDR repository shall be statically configured. 4.1.3 Communications Agent The communications agent is responsible for receiving PLDM commands from the MCTP/PLDM stack and taking appropriate response. In the case of commands that read Sensors, the communication agent will interact with the firmware “application” to receive the most recent Sensor reading and pass it back to the client. In the case of commands that set Effecter values, the communication agent will send the requested Effecter values to the application for processing. When the client requests the platform data record repository during device discovery, the communications agent will send the repository through a sequence of responses. The format and expected responses for these communications is dictated by the DMTF PLDM specifications. In order to minimize communications complexity on the IIoT Endpoint, a single-threaded communications model has been adopted. This means that the IIoT Node should not expect a new request from the client until it has responded to any outstanding requests. The client, in turn should not send any new commands to the Endpoint until either a response is received or the previous request has timed-out. NOTE: IIoT clients shall wait for either a response or a timeout from the Endpoint before sending another command to the Endpoint.
+**REQ 4.310**:  IIoT Endpoint Device PDR repository shall be statically configured. 
 
-**REQ 4.320**: IIoT Endpoints may simplify their communications by assuming that only one client request will be received at a time. 4.1.4 Event Generator The event generator is responsible for sending event messages to the client. PLDM event messages are unsolicited from the client and should take priority over any pending requests/responses. In the case of an event the following requirements apply:
+**REQ 4.320**: IIoT Endpoints may simplify their communications by assuming that only one client request will be received at a time. 
 
-**REQ 4.330**:  DSP0248] The PLDM Event Generator shall comply with requirements found in [DMTF- 4.1.5 MCTP Network Topology PICMG has determined to use Management Control Transport Protocol as the base communications protocol for each Endpoint. The MCTP specification states: PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 33 “MCTP is designed so that it can potentially be used on many bus types. The protocol is intended to be used for intercommunication between elements of platform management subsystems used in computer systems, and is suitable for use in mobile, desktop, workstation, and server platforms.” Each IIoT Node has a single associated point-to-point link to a Bridge/Aggregator device where traffic flows between the Endpoint and the Bridge/Aggregator. Peer-to-Peer traffic between Endpoints is not supported. Thus, the Bridge/Aggregator device may choose to represent each point-to-point link as a separate MCTP network with a separate numeric space for Endpoint IDs. Alternatively, the Bridge/Aggregator device may represent all the point-to-point links comprising the only MCTP network, but apply restrictions to allow direct communication only. Beyond this, IIoT Node implementation should not put forward any expectations on the MCTP network topology. 4.1.6 PLDM subsystem One or more IIoT Nodes directly connected to an IIoT Bridge/Aggregator device via MCTP-enabled point-to-point links form a PLDM subsystem. In a PLDM subsystem the Bridge/Aggregator device typically bares the following responsibility: • • • Acts as an MCTP bus owner for each MCTP-enabled link. Implements PLDM Discovery Agent and Initialization Agent functions. Provides a manageability access point for reaching from the IIoT management Network. As an MCTP bus owner the IIoT Bridge/Aggregator device tracks IIoT Endpoint presence on each point-to-point link. Upon a system power up or detection of the peer device on a point-to-point link, Bridge/Aggregator device performs MCTP Endpoint discovery. The MCTP Endpoint discovery process is described in detail in [DMTF-DSP0236]. Below are typical steps performed by MCTP bus owner during MCTP Endpoint discovery which are included for informative purpose: 1. 2. 3. 4. Assigns device bus address. Queries MCTP versioning and message type support. Assigns MCTP Endpoint ID if required. Notifies message type-specific handlers (e.g. PLDM Discovery Agent) of a new device. Being notified by the MCTP bus owner of a new MCTP Endpoint which supports PLDM messaging, the Discovery Agent function in the Bridge/Aggregator performs further steps in order to initialize the PLDM terminus on the IIoT Endpoint. The PLDM terminus discovery process is described in detail in [DMTF-DSP0248]. Below are typical steps performed by the Discovery Agent during PLDM terminus discovery which are included for information purpose: 1. Queries supported PLDM versions, PLDM types, and commands. 2. Assigns terminus ID. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 34 3. Downloads PDRs from the Device PDR repository and merges the contained information into the internal database. 4. Enables platform event generation from the discovered terminus. Upon completion of a PLDM terminus discovery, the Bridge/Aggregator device gathers the following information about the IIoT Endpoint: • • • • • • A physical Entity Type (chassis, card, module, etc.) baring the function of IIoT Node(s). Inventory information about the Endpoint device. Type of IIoT Node. Set of Numeric and State Sensors. Set of Numeric and State Effecters. Set of FRU Data records associated with the IIoT Node. The discovered information is then merged into the internal database which is used for exposing to the upper IIoT Network segments. 4.1.6.1 IIoT Nodes With Multiple IIoT Endpoints While Physical Nodes (i.e. add-in cards or modules) are allowed to implement more than one IIoT Endpoint, there are constraints on how this can be done. Each IIoT Endpoint on the device essentially becomes a Logical Node, and is associated with a dedicated MCTP endpoint and a PLDM terminus. IIoT endpoints share the only physical point-to-point link to Aggregator/Bridge via a (probably virtual) MCTP bridge. If an IIoT Node implements multiple IIoT Endpoints, it must comply with the following requirements.
+**REQ 4.330**:  The PLDM Event Generator shall comply with requirements found in [DMTF-DSP0248].
 
 **REQ 4.340**:  An IIoT Node shall implement an MCTP Bridge.
 
@@ -97,9 +93,9 @@
 
 **REQ 4.400**: An IIoT Endpoint shall only accept commands for the resources associated with the PLDM terminus.
 
-**REQ 4.410**: All IIoT Endpoints on an IIoT Node shall report the same Entity Type for the container entity of the associated Logical Nodes. 4.2 Recovery (e.g. Loss of Power/Loss of Communication) On power loss, the IIoT Endpoint is not required to maintain its state from the previous session. When power is restored, the device will behave as if a power-on event has occurred. It is the PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 35 responsibility of the Bridge/Aggregator to take appropriate action to restore the system after a loss of power.
+**REQ 4.410**: All IIoT Endpoints on an IIoT Node shall report the same Entity Type for the container entity of the associated Logical Nodes. 
 
-**REQ 4.420**:  The IIoT Endpoint shall not maintain state through a power-cycle. IIoT Endpoints, in general may not have the capability to detect loss of communication. During loss of communications, the IIoT Endpoint, should continue operating as normal. This means, that any commands in process will continue toward completion. If quiesced, the Endpoint will continue to await new commands. 4.3 Device Definitions Each IIoT PLDM terminus must provide a Device PDR repository describing an IIoT Node, its Sensors, Effecters, and optional FRU Inventory information associated with the containing physical device. There are several mandatory PDRs which IIoT Bridge/Aggregator device expects seeing in the Device PDR repository in order to correctly determine IIoT Node type. Table 3 illustrates contents of the Terminus Locator PDR for an IIoT Endpoint.
+**REQ 4.420**:  The IIoT Endpoint shall not maintain state through a power-cycle. 
 
 ### Table 3: Terminus Locator PDR
 | Offset | Length | Definition |
@@ -185,7 +181,7 @@
 
 **REQ 4.500**:  equal to 1. Each Sensor-related or Effecter-related PDR shall have entityInstanceNumber field
 
-**REQ 4.510**:  Each Sensor-related or Effecter-related PDR shall have containerID field equal to 1. 4.3.1 Global Interlock Several IIoT Endpoint types implement a Global Interlock. IIoT Endpoint firmware must follow the requirements below if it implements the Global Interlock. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 39
+**REQ 4.510**:  Each Sensor-related or Effecter-related PDR shall have containerID field equal to 1. 
 
 **REQ 4.540**:  in Table 9. The Device PDR repository shall contain a State Sensor PDR for Trigger as depicted
 
@@ -235,15 +231,15 @@
 
 **REQ 4.570**:  Sensor readings shall be linearized by the IIoT Node firmware.
 
-**REQ 4.580**:  Effecter settings shall be linearized by the IIoT Node firmware. NOTE: it is expected that the firmware build process will combine response curves from the sensor/effecter and the input/output stages of the IIoT Node to perform the linearization. The IIoT Node is not required to use all the sample points present in the configuration tables, however, if fewer points are used for linearization, the accuracy reported in the Sensor/Effecter PDR should be updated to reflect the overall measurement/control accuracy. 4.3.4 Simple Sensor/Effecter Endpoint The simple Sensor/Effecter Endpoint implements one or more Sensor or Effecter connections without any local control functions. Control of any Effecters (if present) must be accomplished through PLDM commands through the Bridge/Aggregator device. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 44 4.3.4.1 Required PDRs Several PDRs are expected for proper identification and operation of the simple Sensor/Effecter Endpoint. Requirements for these PDRs are listed here.
+**REQ 4.580**:  Effecter settings shall be linearized by the IIoT Node firmware. NOTE: it is expected that the firmware build process will combine response curves from the sensor/effecter and the input/output stages of the IIoT Node to perform the linearization. The IIoT Node is not required to use all the sample points present in the configuration tables, however, if fewer points are used for linearization, the accuracy reported in the Sensor/Effecter PDR should be updated to reflect the overall measurement/control accuracy. 
 
 **REQ 4.590**: The simple Sensor/Effecter Endpoint shall include a OEM Entity ID for a PICMG Simple Sensor/Effecter OEM Entity.
 
 **REQ 4.600**: The simple Sensor/Effecter Endpoint shall include at least one of the following PDRs: Numeric Sensor PDR, State Sensor PDR, Numeric Effecter PDR, State Effecter PDR.
 
-**REQ 4.610**: Sensor/Effecter PDRs shall be associated with the PICMG Simple Sensor/Effecter OEM Entity. NOTE: Other PDRs may be present within the simple Sensor/Effecter Endpoint so long as they do not prevent meeting the stated requirements. 4.3.4.2 Entities The Endpoint implements an OEM entity that identifies it as a simple Sensor/Effecter Endpoint. Requirements for the OEM Entity ID PDR are as follows.
+**REQ 4.610**: Sensor/Effecter PDRs shall be associated with the PICMG Simple Sensor/Effecter OEM Entity. NOTE: Other PDRs may be present within the simple Sensor/Effecter Endpoint so long as they do not prevent meeting the stated requirements.  
 
-**REQ 4.620**: The PICMG Simple Sensor/Effecter OEM Entity ID PDR shall have a entity id of 1, indicating a simple Sensor/Effecter Endpoint. 4.3.4.3 Behavior There are no specific additional behaviors for the PICMG Simple Sensor/Effecter Endpoint. 4.3.4.4 Sensors The PICMG Simple Sensor/Effecter Endpoint has no required Sensors. If Sensors are present, the following requirements apply.
+**REQ 4.620**: The PICMG Simple Sensor/Effecter OEM Entity ID PDR shall have a entity id of 1, indicating a simple Sensor/Effecter Endpoint. 
 
 **REQ 4.630**:  The following Sensor IDs shall be reserved for specific Sensors (if present):
 
@@ -263,7 +259,7 @@
 |1|Global Interlock state Effecter|
 |2|Trigger state Effecter|
 
-**REQ 4.650**:  Effecters that can control physical devices should be disabled during start-up. NOTE: The intent is that outputs are placed in a “safe” state until configured for operation. NOTE: The “safe” state for a given Effecter may depend on its operating context but will, in general, be a condition in which 1) no additional energy is added to the Effecter; and 2) the Effecter is allowed to passively dissipate any kinetic and/or thermal energy it already has, without active intervention by the Endpoint Controller. It is ultimately the responsibility of the system designer/integrator to determine what is “safe” for a given application. 4.3.4.6 Configuration Parameters This section contains requirements on configuration parameters for the Simple Sensor/Effecter Endpoint. The configuration mechanism is described in detail in section 5 of this document (Configuration).
+**REQ 4.650**:  Effecters that can control physical devices should be disabled during start-up. NOTE: The intent is that outputs are placed in a “safe” state until configured for operation. NOTE: The “safe” state for a given Effecter may depend on its operating context but will, in general, be a condition in which 1) no additional energy is added to the Effecter; and 2) the Effecter is allowed to passively dissipate any kinetic and/or thermal energy it already has, without active intervention by the Endpoint Controller. 
 
 **REQ 4.660**:  PID Endpoint shall support the following configuration parameters:
 
@@ -280,7 +276,7 @@
 
 **REQ 4.680**: Names for Sensor I/O bindings shall begin with “Sensor“ followed by a base-10 numeric identifier.
 
-**REQ 4.690**: Names for Effecter I/O bindings shall begin with “Effecter“ followed by a base-10 numeric identifier. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 46 4.3.5 PID Controller Endpoint The PID controller Endpoint implements a single PID (Proportional, Integral, Differential) control loop as shown in the following figure. Circular elements with an “E” in them represent Effecters. Circular elements with an “S” in them represent Sensors. Sensors and Effecters marked with a blue dot represent required elements. Sensors and Effecters marked with a yellow dot are optional. Figure 11: PID Control Structure The operator sets the proportional, integral, and differential gain parameters along with a setpoint value. The PID controller will attempt to maintain the value of the output to match the specified setpoint. In this model, the operator sets the desired value (position, speed, temperature, etc.) of the controlled item using the “setpoint” virtual Effecter. The feedback from the controlled item is sensed and fed into the PID Controller at each control loop sample period. The feedback may also be available for reading on the “feedback” numeric Sensor. The feedback value is compared against the setpoint, and the difference (error) is used to generate a new control value based on the PID control algorithm and the values of the P (proportional gain), I (integral gain) and D (differential gain) virtual Effecters. The error value may also be read using the “error” virtual Sensor. Other Sensors and Effecters are related to the global interlock and trigger functions. 4.3.5.1 Required PDRs Several PDRs are expected for proper identification and operation of the PID control Endpoint. Requirements for these PDRs are listed here.
+**REQ 4.690**: Names for Effecter I/O bindings shall begin with “Effecter“ followed by a base-10 numeric identifier. 
 
 **REQ 4.700**: The PID controller Endpoint shall include an OEM Entity ID PDR for a PICMG PID Controller OEM Entity.
 
@@ -288,7 +284,7 @@
 
 **REQ 4.720**:  The PID controller endpoint shall include PDRs as described in section 4.3.2.
 
-**REQ 4.730**: The PID controller Endpoint shall include an OEM State Set PDR for the PICMG OEM PID Controller State Set as described in Table 15. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 47
+**REQ 4.730**: The PID controller Endpoint shall include an OEM State Set PDR for the PICMG OEM PID Controller State Set as described in Table 15. 
 
 ### Table 15: PID Controller OEM State Set PDR
 
@@ -401,9 +397,9 @@
 | 27 | 1 | Possible State Size. For this specification, the value 01h is used. |
 | 28 | 1 | Possible States. For this specification, the value 03h is used. NOTE: Other PDRs may be present within the PID Controller Endpoint so long as they do not prevent meeting the stated requirements. |
 
-**REQ 4.770**: The PICMG PID Controller OEM Entity ID PDR shall have an entity id of 2, indicating a PID Controller Endpoint. 4.3.5.3 Behavior The PID Controller Endpoint supports two different operational states: Running, and Idle. In addition, there are two potential “error” condition states. The relationship between these states is shown below. Figure 12: PID Controller State-Machine Upon start-up, the PID controller is in the IDLE state. It remains in this state until the PID Command state Effecter is set to Start. In this state, the control loop should be effectively disabled, and the control output should be placed into a “safe” state; see notes on “safe” states in section 4.3.4.5. In the Running state, the PID loop is operational and the control output exerts change on the controlled item to reach and maintain the feedback at the setpoint value. The running state can be exited by sending a Stop command to the PID Command state Effecter. While running, if a special condition or error occurs, the state machine will transition to ConditionStop or ErrorStop respectively. Special conditions that cause a transition to ConditionStop are the error or feedback Sensors having values beyond the “critical” limit, as defined by PLDM Sensor thresholds, or the trigger Sensor becoming active. A global interlock signal or Sensor readings beyond the fatal limit will cause a transition to the ErrorStop state.
+**REQ 4.770**: The PICMG PID Controller OEM Entity ID PDR shall have an entity id of 2, indicating a PID Controller Endpoint. 
 
-**REQ 4.780**: The PICMG OEM PID Controller operational state shall implement state transitions as show in the following table: PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 52
+**REQ 4.780**: The PICMG OEM PID Controller operational state shall implement state transitions as show in the following table: 
 
 ### Table 19: PID Controller State Transitions
 
@@ -427,9 +423,9 @@
 
 **REQ 4.800**: Events that could cause transitions to ConditionStop shall be given precedence over all other conditions except those that could cause a transition to ErrorStop.
 
-**REQ 4.810**: In all states other than Running, the PID controller shall be placed into a “safe” state; see notes on “safe” states in section 4.3.4.5. NOTE: In order to transition back to idle from either ConditionStop or ErrorStop, all error conditions must be cleared. 4.3.5.4 Sensors The PICMG PID Controller Endpoint has several required Sensors. The following requirements apply.
+**REQ 4.810**: In all states other than Running, the PID controller shall be placed into a “safe” state; see notes on “safe” states in section 4.3.4.5. NOTE: In order to transition back to idle from either ConditionStop or ErrorStop, all error conditions must be cleared. 
 
-**REQ 4.820**:  The PID Controller shall implement a Global Interlock State Sensor. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 53
+**REQ 4.820**:  The PID Controller shall implement a Global Interlock State Sensor. 
 
 **REQ 4.830**:  The PID Controller shall implement a Trigger State Sensor.
 
@@ -469,7 +465,7 @@
 
 **REQ 4.960**:  The PID Controller shall implement an Integral Gain numeric Effecter.
 
-**REQ 4.970**: The base units of the Integral Gain numeric Effecter shall be ((Control Output Units)/(Setpoint Units))*seconds. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 54 NOTE: If this Effecter is implemented with an integer data type, it is recommended that the resolution and offset Effecter fields be used to provide for fractional precision. NOTE: The resolution field for the Effecter may include a scaling ratio to convert from seconds to sample periods, simplifying the computations by the controller.
+**REQ 4.970**: The base units of the Integral Gain numeric Effecter shall be ((Control Output Units)/(Setpoint Units))*seconds.  NOTE: If this Effecter is implemented with an integer data type, it is recommended that the resolution and offset Effecter fields be used to provide for fractional precision. NOTE: The resolution field for the Effecter may include a scaling ratio to convert from seconds to sample periods, simplifying the computations by the controller.
 
 **REQ 4.980**:  The PID Controller shall implement a Differential Gain numeric Effecter.
 
@@ -577,7 +573,7 @@
 | 172 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
 | 175 | 10 | State Name. A null-terminated Unicode string “Done” in UTF-16BE format. |
 
-**REQ 4.1080**: The Profiled Motion controller Endpoint shall include an OEM Sate Set PDR for the PICMG OEM Profiled Motion Controller Command State Set as described in Table 25. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 61
+**REQ 4.1080**: The Profiled Motion controller Endpoint shall include an OEM Sate Set PDR for the PICMG OEM Profiled Motion Controller Command State Set as described in Table 25. 
 
 ### Table 25: Profiled Motion Controller Command OEM State Set PDR
 
@@ -633,7 +629,7 @@
 | 25 | 1 | Possible State Size. For this specification, the value 01h is used. |
 | 26 | 1 | Possible States. For this specification, the value 7Fh is used. Profiled Motion Controller Command Effecter as described in Table 27. |
 
-**REQ 4.1100**: The PID controller Endpoint shall include a State Effecter PDR for the PICMG OEM Profiled Motion Controller Command Effecter as described in Table 27. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 63
+**REQ 4.1100**: The PID controller Endpoint shall include a State Effecter PDR for the PICMG OEM Profiled Motion Controller Command Effecter as described in Table 27. 
 
 ### Table 27: Profiled Motion Controller Command Effecter PDR
 
@@ -657,7 +653,7 @@
 | 27 | 1 | Possible State Size. For this specification, the value 01h is used. |
 | 28 | 1 | Possible States. For this specification, the value 07h is used. NOTE: Other PDRs may be present within the Profiled Motion Controller Endpoint so long as they do not prevent meeting the stated requirements. |
 
-**REQ 4.1110**: The PICMG Profiled Motion Controller OEM Entity ID PDR shall have an entity id of 3, indicating a Profiled Motion Controller Endpoint. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 64 4.3.6.5 Behavior It is typical to use a profiled motion controller to move a motor from one position to another. However, there are cases that the same controller may also need to spin a motor at a constant speed with no specific final position. Both of these modes are supported by the Profiled Motion Controller and are described in the following sub-sections. 4.3.6.5.1 Profiled Position Moves Profiled position moves are moves in which the position, velocity and acceleration are specified. For these moves, there are four different normal operational states and two error states. These are: Idle, RunningP, Waiting, Done, ConditionStop and ErrorStop. The relationship between these states is shown below. Figure 15: Profiled Motion Controller State-Machine, Profiled Position Move Upon start-up, the Profiled Motion Controller is in the IDLE state. It remains in this state util the Command state Effecter is set to Start. In this state, the motion profile generator is inactive and the and the control output should be placed into a “safe” state; see notes on “safe” states in section 4.3.4.5. Depending upon the configuration parameters of the controller, the motor may coast, or may be held at the current position, or have the mechanical brake applied. In the RunningP (Running Position move) state, the profile generator and the control output exerts change to the motor’s position/velocity in an attempt to follow the motion profile. The RunningP state can be exited by sending a Stop command to the Command state Effecter. If a Stop command is received, the motor will transition to the Idle state, stopping its current motion. Alternately, if the motor reaches its final position, the controller will transition to the Done state automatically. The Done state indicates that the motor has reached the final position requested by the operator. In this state, the motor will either coast, hold its current position, or engage an external brake (as set by configuration parameter. The Done state may be exited by receiving a Stop command from the operator. When the motion controller is in the Idle state, the operator may initiate a synchronized by sending a Wait command to the controller. This will transition the controller to the Waiting state where it will wait for a trigger before beginning motion. In this way, multiple axes of motion can be synchronized to a single trigger signal. A negative-going edge on the Trigger Sensor will cause motion to begin and PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 65 transition the state machine to the RunningP state. While in the Waiting state, motion may also be aborted by sending the Stop command. If while running, a special condition or error occurs, the state machine will transition to ConditionStop or ErrorStop respectively. Special conditions that cause a transition to ConditionStop are the error or feedback Sensors having values beyond the “critical” limit, as defined by PLDM Sensor thresholds, or the trigger Sensor becoming active. Limit Sensors may also trigger a transition to ConditionStop if the direction of motion is the same as the limit Sensor. A global interlock signal or Sensor readings beyond the fatal limit will cause a transition to the ErrorStop state. 4.3.6.5.2 Profiled Velocity Moves Profiled velocity moves are moves in which the velocity and acceleration are specified. No final position is specified, so the motion continues at a constant velocity until the motion is stopped, or another velocity is specified. For these moves, there are three different normal operational states and two error states. These are: Idle, RunningV, Waiting, ConditionStop and ErrorStop. The relationship between these states is shown below. Figure 16: Profiled Motion Controller State-Machine, Profiled Position Move Upon start-up, the Profiled Motion Controller is in the IDLE state. It remains in this state util the Command state Effecter is set to Start. In this state, the motion profile generator is inactive and the and the control output should be placed into a “safe” state; see notes on “safe” states in section 4.3.4.5. Depending upon the configuration parameters of the controller, the motor may coast, or may be held at the current position, or have the mechanical brake applied. In the RunningV (Running Velocity motion) state, the profile generator and the control output exerts change to the motor’s position/velocity in an attempt to follow the motion profile, with no final position. The motor velocity will slew upward to the desired value and the controller will attempt to hold the velocity constant from that point onward. The RunningV state can be exited by sending a Stop command to the Command state Effecter. If a Stop command is received, the motor will transition to the Idle state, stopping its current motion. When the motion controller is in the Idle state, the operator may initiate a synchronized by sending a Wait command to the controller. This will transition the controller to the Waiting state where it will PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 66 wait for a trigger before beginning motion. In this way, multiple axes of motion can be synchronized to a single trigger signal. A negative-going edge on the Trigger Sensor will cause motion to begin and transition the state machine to the RunningV state. While in the Waiting state, motion may also be aborted by sending the Stop command. If while running, a special condition or error occurs, the state machine will transition to ConditionStop or ErrorStop respectively. Special conditions that cause a transition to ConditionStop are the error or feedback Sensors having values beyond the “critical” limit, as defined by PLDM Sensor thresholds, or the trigger Sensor becoming active. Limit Sensors may also trigger a transition to ConditionStop if the direction of motion is the same as the limit Sensor. A global interlock signal or Sensor readings beyond the fatal limit will cause a transition to the ErrorStop state. 4.3.6.5.3 Behavior Requirements This section describes the behavioral requirements for the Profiled Motion Controller.
+**REQ 4.1110**: The PICMG Profiled Motion Controller OEM Entity ID PDR shall have an entity id of 3, indicating a Profiled Motion Controller Endpoint. 
 
 **REQ 4.1120**: Start commands shall not be accepted if Vprofile or Aprofile Effecters are disabled.
 
@@ -731,7 +727,7 @@
 
 **REQ 4.1260**: The Profiled Motion Controller shall implement a Perror (Position Error) numeric Sensor when configured for PI-V operation.
 
-**REQ 4.1270**: The base units of the Perror numeric Sensor shall be the same as the Pfinal Effecter units. NOTE: This Sensor should return the real-time difference between the position setpoint from the profile generator and the actual motor position. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 70
+**REQ 4.1270**: The base units of the Perror numeric Sensor shall be the same as the Pfinal Effecter units. NOTE: This Sensor should return the real-time difference between the position setpoint from the profile generator and the actual motor position. 
 
 **REQ 4.1280**: The Profiled Motion Controller shall implement a Verror (Velocity Error) numeric Sensor when configured for PI-V operation.
 
@@ -767,7 +763,7 @@
 
 **REQ 4.1370**: The Profiled Motion Controller shall implement a Global Interlock State Effecter.
 
-**REQ 4.1380**: The Profiled Motion Controller shall implement a Trigger State Effecter. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 71
+**REQ 4.1380**: The Profiled Motion Controller shall implement a Trigger State Effecter. 
 
 **REQ 4.1390**: The Profiled Motion Controller shall implement a Command virtual state Effecter.
 
@@ -799,7 +795,7 @@
 
 **REQ 4.1530**: The value of the AccelerationGain Effecter (if implemented) shall be used by the PIV controller as the acceleration feedforward gain. NOTE: This parameter allows for tuning of the PIV response when loading at the output changes.
 
-**REQ 4.1540**: The sign of the AccelerationGain Effecter value (if implemented) shall be ignored. NOTE: Only the magnitude is required. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 72
+**REQ 4.1540**: The sign of the AccelerationGain Effecter value (if implemented) shall be ignored. NOTE: Only the magnitude is required. 
 
 **REQ 4.1550**: The units of AcclerationGain Effecter (if implemented) shall be the (PIV output units)/((units of Pfinal) / second2).
 
@@ -876,8 +872,7 @@
 
 **REQ 4.1620**: The Endpoint shall support the minimum set of Firmware Update commands described in [DMTF-DSP0267].
 
-**REQ 4.1630**: Firmware updates should only be possible when the Interlock signal is externally asserted. NOTE: This ensures that the device is in a “safe” state prior to firmware updates. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 76 5 Configuration Requirements Configuration is the installation phase in which Sensors and Effecters are combined with a controller to create a smart endpoint. During this step, it is expected that the controller firmware will need to be configured to comprehend the connected hardware and support the proper runtime operating models. Figure 17 shows the expected use-case for device configuration. Figure 17: Device Configuration The input to the configuration process begins with hardware and configuration information from both the Sensor/Effecter vendor(s) and the controller vendor. The configuration information for the Sensor/Effecter details device operation, required electrical connection, linearization characteristics and device units. In the case of the controller, configuration information details electrical connection options, operating mode options, device configuration parameters and constraints. Configuration proceeds by systematically combining the information provided by the vendors with additional guidance from the Sensor/Effecter integrator. The resulting configuration file documents the operating model of the controller and how peripherals are connected such that all device constraints are met. Although this process could be completed manually, it is envisioned that an automation tool will be used to aid in the process. An example tool can be found at https://github.com/PICMG/iot_configurator.git. Once the configuration file has been created, it can be used as an input to vendor-specific build tools to create the device’s firmware image. 5.1 Configuration Schema Representation The input files to the configuration process as well as the resulting config file are all structured as JSON objects. JSON was originally developed by the IETF and is a lightweight, text-based, data representation mechanism originally developed for language-independent data exchange. More information on JSON can be found in [IETF RFC-7159]. This document represents JSON schema in a tabular fashion where each table is a JSON object. The left column in the table defines the JSON keyword (quotes omitted). The description column provides a description of the function of the JSON field. The nullable column indicates if a null JSON value is allowed. The right column provides a description of the type of data expected for the keyword. Unless otherwise specified, JSON arrays in this specification may be empty. For example: PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 77
-
+**REQ 4.1630**: Firmware updates should only be possible when the Interlock signal is externally asserted. NOTE: This ensures that the device is in a “safe” state prior to firmware updates. 
 
 ### Section 5
 
@@ -896,7 +891,7 @@
 
 **REQ 5.20**:  The controller capabilities file shall include at least one LogicalEntity object within the logicalEntities array.
 
-**REQ 5.30**:  Other fields may be present in the ControllerCapabilities object. 5.2.1 Channel objects Channels are a logical construct that relate an electrical interface with specific device pins. Example of simple channels might be a simple digital input. In this case, only a single device pin is required, and the channel represents the state of the pin as a binary value. Examples of more complex channels are digital counters, which count pulses received on the input pin, or the step and direction output channel to control a stepper motor. The general structure for Channel objects is as follows:
+**REQ 5.30**:  Other fields may be present in the ControllerCapabilities object. 
 
 ### Table 36: Channel object structure
 
@@ -911,9 +906,9 @@
 |accuracy|An error component that scales linearly with the magnitude of the reading, expressed as a percentage (1.0 = 1%). |No|Numeric|
 |pins|An array of PinUse objects associated with this channel. In many cases pins may be shared between multiple channels; however, channels that share pins cannot both be configured for use since pins may only serve one function at a time.|No|Array of PinUse objects|
 
-**REQ 5.40**:  Array of PinUse objects Channel objects shall consist of the JSON structure defined in Table 36. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 80
+**REQ 5.40**:  Array of PinUse objects Channel objects shall consist of the JSON structure defined in Table 36. 
 
-**REQ 5.50**:  Table 37. Channel type strings shall consist of one of the electrical interface type names found in 5.2.1.1 Electrical Interface types Electrical interface types supported by this specification are described in table Table 37. Electrical interface names are included in each channel definition to relate the logical channel name to a specific electrical interface type. Electrical interfaces correspond to the electrical connection that the device supports on its connectors.
+**REQ 5.50**:  Table 37. Channel type strings shall consist of one of the electrical interface type names found in 5.2.1.1 Electrical Interface types Electrical interface types supported by this specification are described in table Table 37. 
 
 ### Table 37: Channel Electrical Interface Types
 
@@ -941,7 +936,7 @@
 
 **REQ 5.70**:  PinUse objects shall be used to ensure that channels that use the same pins cannot be configured for use at the same time.
 
-**REQ 5.80**:  The value for the name field in the PinUse object shall match one of the strings found under the pins keyword of its associated ControllerCapabilities object. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 82 5.2.2 FruRecord objects The ControllerCapabilities object may contain a collection of fru records that must be present for all configured instances of the firmware. The general structure of each FruRecord object is shown in Table 39.
+**REQ 5.80**:  The value for the name field in the PinUse object shall match one of the strings found under the pins keyword of its associated ControllerCapabilities object. 
 
 ### Table 39: FruRecord object structure
 
@@ -952,9 +947,9 @@
 | description | A text description of the fru record that may be useful to the sensor/effecter integerator. | Yes | String |
 | fields | An array of FruField objects that define each field in the FruRecord. | No | Array of |
 
-**REQ 5.90**:  Nullable Data Type No Integer required true if this entity must No always be present in the device’s configuration. This must be set to true for FruRecords in the ControllerConfiguration Boolean description A text description of the fru record that may be useful to the sensor/effecter integerator. Yes String fields An array of FruField objects that define each field in the FruRecord. No Array of FruField objects All FruRecord objects shall comply with the structure defined in Table 39.
+**REQ 5.90**:  FruRecord objects shall comply with the structure defined in Table 39.
 
-**REQ 5.100**: All FruRecord objects within the ControllerCapabilities object shall have the required field set to true. 5.2.2.1 FruField objects FruField objects are used to define the individual fields within the FruRecord object. FruField objects also contain metadata which may be helpful to guide the configuration process. The contents and definitions of each field type for general FRU fields are defined in DMTF-DSP0240. The contents and structure of OEM FRU fields are OEM-specific. This specification supports the definition of OEM FRU fields either through the use of general data formats, or collections of bytes. The structure of FruField objects is as follows: PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 83
+**REQ 5.100**: All FruRecord objects within the ControllerCapabilities object shall have the required field set to true. 
 
 ### Table 40:  FruField object structure
 
@@ -977,7 +972,7 @@
 
 **REQ 5.150**:  FruField objects that do not have a “bytes” format shall have a null length value.
 
-**REQ 5.160**: If specified, the number of bytes in the FruField objects value shall match the number specified by length. 5.2.3 LogicalEntity objects The collection of LogicalEntity objects found within the ConfigurationCapabilities object represents the set of all possible logical entities that may be instantiated within the device. It will be typical that PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 84 a given controller only instantiate one LogicalEntity; however, multiple entities are not precluded by the specification. Channel and pin usage between different LogicalEntities may preclude their simultaneous instantiation due to resource constraints (channels and pins may only be used once for a given device). ConfiguredLogical entities will be placed in the Configuration section of the config file. Logical entity information, once configured, can be used by the build process to create the PDR records for entities, Sensors, and Effecters. LogicalEntity objects consist of the following structure:
+**REQ 5.160**: If specified, the number of bytes in the FruField objects value shall match the number specified by length. 
 
 ### Table 41:  LogicalEntity object structure
 
@@ -995,7 +990,9 @@
 
 **REQ 5.180**: The value of the vendorIANA and vendorID fields within the LogicalEntity object shall match their corresponding fields in the desired OEM Entity ID PDR.
 
-**REQ 5.190**: The value for the name field in the LogicalEntity object shall be unique across all LogicalEntity objects. REQ If the value of the required field within the LogicalEntity object is true, the LogicalEntity shall be required be present in any resulting configuration of the device. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 85 5.2.4 IOBinding objects IOBinding objects represent the physical or logical binding of a Sensor/Effecter to the LogicalEntity. When configured, bindings contain all the necessary information to produce the required Sensor/Effecter PDRs as well as guidance to properly build the device firmware. Bindings within the ConfigurationCapabilities object will typically be incomplete – awaiting input from the Sensor/Effecter integrator to complete the configuration. The exception to this would be virtual Sensors/Effecters that require no binding to physical I/O channels and pins and are always present for a specific type of LogicalEntity. There are four variations of IOBinding objects, to support binding of state Sensors, state Effecters, numeric Sensors and numeric Effecters respectively. 5.2.4.1 State Sensor IOBinding The state Sensor IOBinding defines the binding for a state Sensor to the LogicalEntity. Its structure is shown in the following table:
+**REQ 5.190**: The value for the name field in the LogicalEntity object shall be unique across all LogicalEntity objects. 
+
+**REQ** If the value of the required field within the LogicalEntity object is true, the LogicalEntity shall be required be present in any resulting configuration of the device. 
 
 ### Table 42:  IOBinding object structure for State Sensors
 
@@ -1023,7 +1020,7 @@
 
 **REQ 5.220**: The stateWhenHigh field for IOBinding objects for virtual state sensors shall be ignored by the configuration process. NOTE: This field should be left null for virtual state sensors
 
-**REQ 5.230**: The stateWhenLow field for IOBinding objects for virtual state sensors shall be ignored by the configuration process. NOTE: This field should be left null for virtual state sensors 5.2.4.2 State Effecter IOBinding The state Effecter IOBinding defines the binding for a state Effecter to the LogicalEntity. Its structure is shown in the following table:
+**REQ 5.230**: The stateWhenLow field for IOBinding objects for virtual state sensors shall be ignored by the configuration process. NOTE: This field should be left null for virtual state sensors 
 
 ### Table 43:  IOBinding object structure for State Effecters
 
@@ -1045,7 +1042,7 @@
 | possibleStates | A 32-bit bitfield where each bit specifies whether or not a specific state in the state set is used. A value of 1 in the bit specifies that the state is used, a value of 0 specifies that it is not. As an example, a value of 3 for this field means that states 0 and 1 are both used, all others are not. | No | Integer |
 | defaultState | The default state for the effecter when it is enabled. | Yes | Integer |
 
-**REQ 5.240**:  IOBinding objects for state Effecters shall consist of the structure found in Table 43. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 90
+**REQ 5.240**:  IOBinding objects for state Effecters shall consist of the structure found in Table 43. 
 
 **REQ 5.250**: The value of the bindingType field for IOBinding objects for state Effecters shall be “stateEffecter”.
 
@@ -1085,7 +1082,7 @@
 | lowerThresholdCritical | The lower critical threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
 | lowerThresholdFatal | The lower fatal threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
 
-**REQ 5.280**:  IOBinding objects for numeric Sensors shall consist of the structure found in Table 44. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 95
+**REQ 5.280**:  IOBinding objects for numeric Sensors shall consist of the structure found in Table 44. 
 
 **REQ 5.290**: The value of the bindingType field for IOBinding objects for numeric Sensors shall be “numericSensor”.
 
@@ -1154,7 +1151,7 @@
 
 **REQ 5.490**: The value of the physicalBaseUnit field in IOBindings in the ControllerCapabilites object shall be null for virtual Effecters.
 
-**REQ 5.500**: The value of the physicalUnitModifier field in IOBindings in the ControllerCapabilites object shall be null for virtual Effecters. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 100
+**REQ 5.500**: The value of the physicalUnitModifier field in IOBindings in the ControllerCapabilites object shall be null for virtual Effecters. 
 
 **REQ 5.510**: The value of the physicalRateUnit field in IOBindings in the ControllerCapabilites object shall be null for virtual Effecters.
 
@@ -1164,7 +1161,7 @@
 
 **REQ 5.540**: The value of the physicalAuxUnitModifier field in IOBindings in the ControllerCapabilites object shall be null for virtual Effecters.
 
-**REQ 5.550**: The value of the physicalAuxRateUnit field in IOBindings in the ControllerCapabilites object shall null for virtual Effecters. 5.2.4.5 DataPoint objects Arrays of DataPoint objects are used by structures within this specification to describe the input to output characterization of IOBinding circuitry as well as sensor and effecter response curves. The structure of a single DataPoint object is simple, consisting of two numeric values, and input value, and the corresponding output. The structure is shown in Table 46.
+**REQ 5.550**: The value of the physicalAuxRateUnit field in IOBindings in the ControllerCapabilites object shall null for virtual Effecters. 
 
 ### Table 46:  DataPoint object structure
 
@@ -1185,7 +1182,7 @@
 
 **REQ 5.610**: If the value of the isVirtual field within the IOBinding object is true, the boundChannel field of the IOBinding shall be null.
 
-**REQ 5.620**: If the value of the isVirtual field within the IOBinding object is true, the boundChannel field of the IOBinding shall remain null after configuration. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 101
+**REQ 5.620**: If the value of the isVirtual field within the IOBinding object is true, the boundChannel field of the IOBinding shall remain null after configuration. 
 
 **REQ 5.630**:  sets. The stateSetVendorIANA field shall be set to 412 (DMTF) for PLDM standard state
 
@@ -1193,7 +1190,7 @@
 
 **REQ 5.650**: For interoperability, the only stateSetVendorIANA values that shall be used in IOBindings in LogicalEntity objects in the ControllerCapabilities object shall correspond to DMTF, PICMG and null. NOTE: Other OEM state sets may be specified in the configuration process, this process is beyond the scope of this specification. One possibility is that the configuration tool has an extensible library of OEM state sets that can be drawn from. It is the responsibility of the build process to make sure all required OEM entity definitions are included in the device’s PDR repository.
 
-**REQ 5.660**: IOBinding fields that are non-null in LogicalEntity objects within the ControllerCapabilities object shall not be modified in the resulting device configuration. 5.2.5 Parameter Objects An array of Parameter objects is included in each LogicalEntity in order to allow for customization at the time of firmware configuration. Each Parameter object has a value that will be null until configured. It also contains metadata that enables the configuration tool to determine the type of data that is allowed, allowable values, and possible default value. The structure of the Parameter object varies by data type (format). These are defined in the following subsections. 5.2.5.1 Numeric Parameter Object Numeric Parameter objects are used to specify a numeric quantity. Their format is as follows:
+**REQ 5.660**: IOBinding fields that are non-null in LogicalEntity objects within the ControllerCapabilities object shall not be modified in the resulting device configuration. 
 
 ### Table 47:  Parameter object structure for Numeric parameters
 
@@ -1230,7 +1227,7 @@
 
 **REQ 5.720**: For an enumerated Parameter, the configuration process shall only allow selection of parameter values from the array of choices within the Parameter object.
 
-**REQ 5.730**: If non-null, the value of an enumerated Parameter defaultValue field shall belong to the array of choices. 5.3 Numeric Sensor Json Each numeric sensor connected to the system should have a Sensor JSON file associated with it. The purpose of this file is to provide information to the configuration process regarding the sensor type, input characteristics and sensitivity. The content of this file can be provided by the sensor manufacturer, or in most cases, created from the devices’ data sheet. The structure of the file is shown in Table 49.
+**REQ 5.730**: If non-null, the value of an enumerated Parameter defaultValue field shall belong to the array of choices. 
 
 ### Table 49:  SensorDefinition JSON object structure
 
@@ -1283,7 +1280,7 @@
 
 **REQ 5.760**:  EffecterDefinition objects shall consist of the structure found in Table 50.
 
-**REQ 5.770**:  Effecter JSON files shall contain one EffecterDefinition object. 5.5 Config File The primary output of the configuration process is the config file. This file is built from the initial capabilities of the controller and any bound sensors/effecters and has been fully configured so that: 1. All required optional Logical Entities have been selected. 2. All required I/O bindings have been configured, including specification of sensors/effecters and device input/output curves. 3. Values for all required parameters have been set. 4. All device constraints for pins and channels have been met. It is envisioned that the configuration process will proceed as follows: 1. Copy the entire ControllerCapabilities object from the controller vendor into the capabilities section of the config file. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 109 2. Create a new, blank ControllerCapabilities object in the configuration section of the config file. 3. Copy any required FruRecord objects from the capabilities section to the configuration section of the config file. 4. Copy any required LogicalEntity objects from the capabilities section to the configuration section of the config file. 5. Allow the sensor/effecter integrator to proceed with configuration as guided by the constraints found in the capabilities section of the config file. a. Optional logical entities may be selected based on the configuration capabilities. b. Values for non-null FruField values may be set c. Values for I/O bindings and parameters may be set as guided by configuration constraints. d. New FRU records may be created. 6. Once all required null values are replaced with configured values, the config file may be saved. As a final step, the configuration process adds definitions for any OEM state sets referenced in the config file. An example configuration file can be found in the following repository: https://github.com/PICMG/iot_configurator.git. 5.5.1 Config file Structure The general format of the config file is found in Table 51.
+**REQ 5.770**:  Effecter JSON files shall contain one EffecterDefinition object. 
 
 ### Table 51:  ConfigFile object structure
 
@@ -1299,11 +1296,11 @@
 
 **REQ 5.800**: The structure of the Configuration object within the ConfigFile shall be the same as that of the ControllerCapabilities object defined in Section 5.2. 5.5.2 General Configuration Object Requirements The following general requirements apply to the Configuration object within the config file.
 
-**REQ 5.810**: The value of the capabilities field in the config file shall match the ControllerCapabilities object associated with the associated hardware device without modification. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 110
+**REQ 5.810**: The value of the capabilities field in the config file shall match the ControllerCapabilities object associated with the associated hardware device without modification. 
 
-**REQ 5.820**:  empty. The value of the pins field within the Configuration object in the config file may be NOTE: The pins array does not change between capabilities and configuration. Vendor-specific build tools should use the pin list from the capabilities section of the config file (if required).
+**REQ 5.820**:  The value of the pins field within the Configuration object in the config file may be empty. NOTE: The pins array does not change between capabilities and configuration. Vendor-specific build tools should use the pin list from the capabilities section of the config file (if required).
 
-**REQ 5.830**:  be empty. The value of the channels field within the Configuration object in the config file may NOTE: The channels array does not change between capabilities and configuration. Vendorspecific build tools should use the channels list from the capabilities section of the config file (if required). 5.5.3 Configuration Object Requirements Related To FruRecord Objects The following requirements apply to FruRecord objects found within the fruRecords array within the Configuration object in the config file.
+**REQ 5.830**:  The value of the channels field within the Configuration object in the config file may be empty. NOTE: The channels array does not change between capabilities and configuration. Vendorspecific build tools should use the channels list from the capabilities section of the config file (if required). 
 
 **REQ 5.840**: All FruRecord objects within the capabilities ControllerCapabilities object shall be present in the Configuration object in the config file.
 
@@ -1319,7 +1316,7 @@
 
 **REQ 5.900**: Only LogicalEntity objects found within the ControllerCapabilities object shall be present in the Configuration object in the config file. NOTE: The configuration process cannot add new LogicalEntity objects that the device may not support.
 
-**REQ 5.910**: With the exception of IOBinding objects and Parameter objects, the fields within each LogicalEntity object within the Configuration object shall not be altered from their values found in the corresponding LogicalEntity found in the ControllerCapabilites object. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 111 NOTE: IOBinding objects and Parameter objects may be altered to complete the configuration.
+**REQ 5.910**: With the exception of IOBinding objects and Parameter objects, the fields within each LogicalEntity object within the Configuration object shall not be altered from their values found in the corresponding LogicalEntity found in the ControllerCapabilites object. 
 
 **REQ 5.920**: Only LogicalEntity objects found within the ControllerCapabilities object shall be present in the Configuration object in the config file.
 
@@ -1329,7 +1326,7 @@
 
 **REQ 5.950**: Non-null IOBinding values within the ControllerCapabilites object shall not be altered within the related IOBinding within the Configuration object.
 
-**REQ 5.960**:  non-null. The boundChannel value for any IOBinding within the Configuration object shall be
+**REQ 5.960**:  The boundChannel value for any IOBinding within the Configuration object shall be non-null. 
 
 **REQ 5.970**: The boundChannel value for any IOBinding within the Configuration object shall have a valid channel name as found in the channels array of the ControllerCapabilities object.
 
@@ -1355,7 +1352,7 @@
 
 **REQ 5.1080**: The effecter value for any non-virtual numeric effecter IOBinding within the Configuration object shall be comprised of a valid EffecterDefinition object.
 
-**REQ 5.1090**: The effecter value for any virtual numeric effecter IOBinding within the Configuration object shall be null. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 112
+**REQ 5.1090**: The effecter value for any virtual numeric effecter IOBinding within the Configuration object shall be null. 
 
 **REQ 5.1100**: The inputGearingRatio value for any non-virtual numeric sensor IOBinding within the Configuration object shall be non-null.
 
@@ -1391,13 +1388,13 @@
 
 **REQ 5.1260**: The physicalAuxRateUnit value for any non-virtual numeric sensor/effecter IOBinding within the Configuration object shall be non-null.
 
-**REQ 5.1262**: The defaultState value for any non-virtual state effecter IOBinding within the configuration object shall be non-null. NOTE: This requirement allows the firmware to determine which state the effecter should enter when enabled. Behavior of virtual sensors is known to the firmware already so the parameter is not required. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 113
+**REQ 5.1262**: The defaultState value for any non-virtual state effecter IOBinding within the configuration object shall be non-null. NOTE: This requirement allows the firmware to determine which state the effecter should enter when enabled. Behavior of virtual sensors is known to the firmware already so the parameter is not required. 
 
 **REQ 5.1264**: The normalMin value for any numeric sensor IOBinding that is included in the PDR shall be non-null.
 
 **REQ 5.1266**: The normalMax value for any numeric sensor IOBinding that is included in the PDR shall be non-null.
 
-**REQ 5.1268**: The values for any non-null threshold specified in a numeric sensor IOBinding shall be strictly decreasing from upperFatal to lowerFatal as described in the PLDM specification. 5.5.5 Configuration Object Requirements Related To Parameter Objects The following requirements apply to Parameter objects found within the parameters array within the Configuration object in the config file.
+**REQ 5.1268**: The values for any non-null threshold specified in a numeric sensor IOBinding shall be strictly decreasing from upperFatal to lowerFatal as described in the PLDM specification. 
 
 **REQ 5.1270**: No Parameter objects shall be added to the Configuration object beyond those found within the parameters array in the ControllerCapabilities object.
 
@@ -1413,7 +1410,7 @@
 
 **REQ 5.1330**: Value fields within numeric Parameter objects within the Configuration object shall have their values set greater than or equal to the value of their minValue field if that field has a nonnull value.
 
-**REQ 5.1340**: Value fields within enumerated Parameter objects within the Configuration object shall have their value set to one of the enumerated choices defined in the Parameter. 5.5.6 OemStateSet Objects The config file introduces an array of OemStateSet objects for the purpose of providing OEM state set information to build tools that may need to generate OEM State Set PDRs. OEM state sets should be included in the file for any OEM state set that is referenced within the config file’s config object. The structure of an OemStateSet object closely follows that of the OEM State Set PDR and is shown in Table 52.
+**REQ 5.1340**: Value fields within enumerated Parameter objects within the Configuration object shall have their value set to one of the enumerated choices defined in the Parameter. 
 
 ### Table 52:  OemStateSet object structure
 
@@ -1431,7 +1428,7 @@
 
 **REQ 5.1370**: The vendorIANA/stateSetId value pair within the OemStateSet object shall match a cooresponding stateSetVendorIANA/stateSet value pair found in the related IOBinding objects in the Configuration object.
 
-**REQ 5.1380**: There shall be no duplicate OemStateSet objects within the Configuration object’s oemStateSets array. 5.5.6.1 OemStateSetValueRecord Objects The OemStateSetValue record object defines each state in an OEM State Set. The structure parallels the OEMStateValueRecord in DMTF-DSP0248 and is shown in Table 53.
+**REQ 5.1380**: There shall be no duplicate OemStateSet objects within the Configuration object’s oemStateSets array. 
 
 ### Table 53:  OemStateSetValueRecord object structure
 
@@ -1442,7 +1439,7 @@
 | languageTags | An array of one or more strings that hold a language tag for the state corresponding state stateName array. Language tags are defined in RFC4646. | No | Array of String |
 | stateName | An array of state names for this state. Each element in the array represents the state name in the language corresponding to the same element in the languageTags array. | No | Array of String |
 
-**REQ 5.1390**: OemStateSetValueRecord objects shall consist of the structure found in Table 53. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 116
+**REQ 5.1390**: OemStateSetValueRecord objects shall consist of the structure found in Table 53. 
 
 ---
 
