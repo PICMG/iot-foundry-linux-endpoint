@@ -4,6 +4,7 @@
 endpoint
 
 include/core/
+requirements/
 src/core/
 tests/__pycache__/
 tools/__pycache__/
