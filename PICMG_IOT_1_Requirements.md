@@ -1317,1422 +1317,240 @@
 
 ### Table 39: FruRecord object structure
 
-**Content lines:** 42
-
-```
-Keyword
-Description
-Nullable Data
-Type
-vendorIANA 
-The vendor IANA for
-the vendor that defined
-the fru record type. For
-IANA will be 12634, for
-general FRU records, the
-value should be 412
-(DMTF)
-No
-Integer
-required
-true if this entity must
-always be present in the
-device’s configuration.
-This must be set to true
-for FruRecords in the
-ControllerConfiguration
-No
-Boolean
-description
-A text description of the
-fru record that may be
-useful to the
-sensor/effecter
-integerator.
-Yes
-String
-fields
-An array of FruField
-objects that define each
-field in the FruRecord.
-No
-Array of
-FruField
-objects
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| Type | vendorIANA The vendor IANA for the vendor that defined the fru record type. For IANA will be 12634, for general FRU records, the value should be 412 (DMTF) | No | Integer |
+| required | true if this entity must always be present in the device’s configuration. This must be set to true for FruRecords in the ControllerConfiguration | No | Boolean |
+| description | A text description of the fru record that may be useful to the sensor/effecter integerator. | Yes | String |
+| fields | An array of FruField objects that define each field in the FruRecord. | No | Array of |
 
 
-### Table 40: FruField object structure
+### Table 40:  FruField object structure
 
-**Content lines:** 58
-
-```
-Keyword
-Description
-Nullable Data Type
-type
-This metadata defines the numeric field
-type for this field. Field types are
-specified in DSP0257
-No
-Integer
-required
-true if this field must always be present in
-the device’s configuration.
-No
-Boolean
-description
-A text description of the fru field that may Yes
-be useful to the sensor/effecter integrator.
-Yes
-String
-format
-The data format for the field. Valid
-options include a subset of those defined
-in DSP0240 (“uint8”, “sint8”, “uint16”,
-“sint16”, “uint32”, “sint32”, “uint64”,
-“sint64”, “string”, “bool8”, “real32”,
-“real64”, “timestamp104”), and “bytes”
-which is represented by a jsonArray of
-unsigned 8-bit integers.
-No
-String
-length
-The required length of byte-formatted
-fields. This field must be specified for
-fields with the format of “bytes”. For
-other types of fields it will be ignored and
-may be null.
-Yes (for byte-formatted fields)
-Numeric or null
-value
-The value of the field.
-Yes
-Dependent upon the
-format field of this
-object2.
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| type | This metadata defines the numeric field type for this field. Field types are specified in DSP0257 | No | Integer |
+| required | true if this field must always be present in the device’s configuration. | No | Boolean |
+| description | A text description of the fru field that may Yes be useful to the sensor/effecter integrator. | Yes | String |
+| format | The data format for the field. Valid options include a subset of those defined in DSP0240 (“uint8”, “sint8”, “uint16”, “sint16”, “uint32”, “sint32”, “uint64”, “sint64”, “string”, “bool8”, “real32”, “real64”, “timestamp104”), and “bytes” which is represented by a jsonArray of unsigned 8-bit integers. | No | String |
+| length | The required length of byte-formatted fields. This field must be specified for fields with the format of “bytes”. For other types of fields it will be ignored and may be null. | Yes | Numeric or null |
+| value | The value of the field. | Yes | Dependent upon the format field of this object2. |
 
 
-### Table 41: LogicalEntity object structure
+### Table 41:  LogicalEntity object structure
 
-```
-Keyword
-Description
-Nullable Data Type
-entityVendorIANA 
-The vendor IANA for the vendor that
-defined the entity type. For PICMG, the
-vendor IANA will be 12634
-No
-Integer
-vendorEntityID
-The vendor entity id associated with this
-entity.
-No
-Integer
-name
-A unique name that identifies this
-possible instance of the entity. For
-instance, “pid1” for the first possible
-instance of a pid controller instance.
-No
-String
-required
-true if this entity must always be present
-in the device’s configuration.
-No
-Boolean
-description
-A text description of the logical entity that Yes
-may be useful to the Sensor/Effecter
-integerator.
-Yes
-String
-ioBindings
-An array of IOBinding objects that define
-how Sensors/Effecters for this
-LogicalEntity are bound to device
-channels.
-No
-Array of IOBinding objects
-parameters
-An array of Parameter objects that define
-configuration parameter options for the
-LogicalEntity
-No
-Array of Parameter objects
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| entityVendorIANA | The vendor IANA for the vendor that defined the entity type. For PICMG, the vendor IANA will be 12634 | No | Integer |
+| vendorEntityID | The vendor entity id associated with this entity. | No | Integer |
+| name | A unique name that identifies this possible instance of the entity. For instance, “pid1” for the first possible instance of a pid controller instance. | No | String |
+| required | true if this entity must always be present in the device’s configuration. | No | Boolean |
+| description | A text description of the logical entity that Yes may be useful to the Sensor/Effecter integerator. | Yes | String |
+| ioBindings | An array of IOBinding objects that define how Sensors/Effecters for this LogicalEntity are bound to device channels. | No | Array of IOBinding objects |
+| parameters | An array of Parameter objects that define configuration parameter options for the LogicalEntity | No | Array of Parameter objects |
 
 
-### Table 42: IOBinding object structure for State Sensors
+### Table 42:  IOBinding object structure for State Sensors
 
-**Content lines:** 149
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| bindingType | A string that identifies the binding type as a state Sensor binding. | No | “stateSensor” |
+| name | A unique name that identifies this IOBinding from all other IOBinding objects within the LogicalEntity. For required I/O bindings, the name should match those found in sections of this document. | No | String |
+| includeInPdr | If value of this field is true, a corresponding PDR record should be generated in the firmware build process. If the value of this field is false, a PDR record will not be generated – this is useful in cases where binding of a function is required, but no direct interaction with the Sensor is allowed at runtime. | No | Boolean |
+| required | true if this I/O binding is required. False of the binding Sensor is optional for the specific LogicalEntity. | No | Boolean |
+| description | A text description of the function of the I/O binding that may be useful to the Sensor/Effecter integrator. | Yes | String |
+| isVirtual | The value of this field should be set to true if the I/O binding is virtual. Virtual Sensors will not be bound to physical I/O and will not be checked against I/O constraints when configured. | No | Boolean |
+| sensorID | The sensor ID for the sensor bound to this channel. This field may only be null if the sensor is not included in the PDR. | Yes | Integer |
+| allowedInterfaceTypes | An array of allowed electrical interface types that this binding can be configured to work with. See section 5.2.1.1 for possible values. For virtual Sensors this array should be blank. | No | Array of String |
+| boundChannel | The actual channel the Sensor is configured to use. The value of this field should be null for LogicalEntity objects in the ControllerCapabilities. When the device is configured, the value of this field will be changed to match a channel from the channels. IOBindings for virtual Sensors should always leave this value null. | Yes | String |
+| stateSetVendorIANA | The vendor id associated with the state set for this Sensor. If this field is nonnull in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| stateSet | The state set id for the state set used by this Sensor. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| usedStates | A bitfield that defines which states in the state set are used. Bit 0, corresponds to the first state in the set, bit-1, the second state and so forth. A bit value of 1 means the state is used, otherwise the state is not used. | No |  |
+| Bitfield | stateWhenHigh The state that will be returned when the binary state of the Sensor’s input pin (or virtual pin) is High. The value of this field should correspond to one of the states in the configured state set. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| stateWhenLow | The state that will be returned when the binary state of the Sensor’s input pin (or virtual pin) is Low. The value of this field should correspond to one of the states in the configured state set. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| possibleStates | A 32-bit bitfield where each bit specifies whether or not a specific state in the state set is used. A value of 1 in the bit specifies that the state is used, a value of 0 specifies that it is not. As an example, a value of 3 for this field means that states 0 and 1 are both used, all others are not. | No | Integer |
 
-```
-Keyword
-Description
-Nullable Data Type
-bindingType
-A string that identifies the binding type
-as a state Sensor binding.
-No
-“stateSensor”
-name
-A unique name that identifies this
-IOBinding from all other IOBinding
-objects within the LogicalEntity. For
-required I/O bindings, the name should
-match those found in sections of this
-document.
-No
-String
-includeInPdr
-If value of this field is true, a
-corresponding PDR record should be
-generated in the firmware build
-process. If the value of this field is
-false, a PDR record will not be
-generated – this is useful in cases
-where binding of a function is required,
-but no direct interaction with the
-Sensor is allowed at runtime.
-No
-Boolean
-required
-true if this I/O binding is required.
-False of the binding Sensor is optional
-for the specific LogicalEntity.
-No
-Boolean
-description
-A text description of the function of the
-I/O binding that may be useful to the
-Sensor/Effecter integrator.
-Yes
-String
-isVirtual
-The value of this field should be set to
-true if the I/O binding is virtual.
-Virtual Sensors will not be bound to
-physical I/O and will not be checked
-against I/O constraints when
-configured.
-No
-Boolean
-sensorID
-The sensor ID for the sensor bound to
-this channel. This field may only be
-null if the sensor is not included in the
-PDR.
-Yes
-Integer
-allowedInterfaceTypes 
-An array of allowed electrical interface
-types that this binding can be
-configured to work with. See section
-5.2.1.1 for possible values. For virtual
-Sensors this array should be blank.
-No
-Array of String
-boundChannel
-The actual channel the Sensor is
-configured to use. The value of this
-field should be null for LogicalEntity
-objects in the ControllerCapabilities.
-When the device is configured, the
-value of this field will be changed to
-match a channel from the channels.
-IOBindings for virtual Sensors should
-always leave this value null.
-Yes
-String
-stateSetVendorIANA
-The vendor id associated with the state
-set for this Sensor. If this field is nonnull in the ControllerCapabilities
-object, it should not be overridden
-during configuration.
-Yes
-Integer
-stateSet
-The state set id for the state set used by
-this Sensor. If this field is non-null in
-the ControllerCapabilities object, it
-should not be overridden during
-configuration.
-Yes
-Integer
-usedStates
-A bitfield that defines which states in
-the state set are used. Bit 0,
-corresponds to the first state in the set,
-bit-1, the second state and so forth. A
-bit value of 1 means the state is used,
-otherwise the state is not used.
-No
-Bitfield
-stateWhenHigh
-The state that will be returned when the
-binary state of the Sensor’s input pin
-(or virtual pin) is High. The value of
-this field should correspond to one of
-the states in the configured state set. If
-this field is non-null in the
-ControllerCapabilities object, it should
-not be overridden during configuration.
-Yes
-Integer
-stateWhenLow
-The state that will be returned when the
-binary state of the Sensor’s input pin
-(or virtual pin) is Low. The value of
-this field should correspond to one of
-the states in the configured state set. If
-this field is non-null in the
-ControllerCapabilities object, it should
-not be overridden during configuration.
-Yes
-Integer
-possibleStates
-A 32-bit bitfield where each bit
-specifies whether or not a specific state
-in the state set is used. A value of 1 in
-the bit specifies that the state is used, a
-value of 0 specifies that it is not. As an
-example, a value of 3 for this field
-means that states 0 and 1 are both used,
-all others are not.
-No
-Integer
-```
+### Table 43:  IOBinding object structure for State Effecters
 
-### Table 43: IOBinding object structure for State Effecters
-
-**Content lines:** 146
-
-```
-Keyword Description Nullable Data Type
-bindingType
-A string that identifies the binding type as a
-state Effecter binding.
-No
-“stateEffecter”
-name
-A unique name that identifies this
-IOBinding from all other IOBinding objects
-within the LogicalEntity. For required I/O
-bindings, the name should match those found
-in sections 4.3.5.6 and 4.3.6.8 of this
-document.
-No
-String
-includeInPdr
-If value of this field is true, a corresponding No
-PDR record should be generated in the
-firmware build process. If the value of this
-field is false, a PDR record will not be
-generated – this is useful in cases where
-binding of a function is required, but no
-direct interaction with the Effecter is allowed
-at runtime.
-No
-Boolean
-required
-true if this I/O binding is required. False of
-the binding is optional for the specific
-LogicalEntity.
-No
-Boolean
-description
-A text description of the function of the I/O
-binding that may be useful to the
-Sensor/Effecter integrator.
-Yes
-String
-isVirtual
-The value of this field should be set to true if
-the I/O binding is virtual. Virtual Effecters
-will not be bound to physical I/O and will
-not be checked against I/O constraints when
-configured.
-No
-Boolean
-effecterID
-The effecter ID for the effecter bound to this
-channel. This field may only be null if the
-effecter is not included in the PDR.
-Yes
-Integer
-allowedInterfaceTypes An array of allowed physical interface types
-that this channel can be configured to work
-with. See section 5.2.1.1 for possible values.
-For virtual Effecters this array should be
-blank.
-No
-Array of String
-boundChannel
-The actual channel the Effecter is configured Yes
-to use. The value of this field should be null
-for LogicalEntities in the
-ControllerCapabilities. When the device is
-configured, the value of this field will be
-changed to match a channel from the
-channels array. IOBindings for virtual
-Effecters should always leave this value null.
-Yes
-String
-stateSetVendorIANA
-The vendor id associated with the state set
-for this Effecter. If this field is non-null in
-the ControllerCapabilities object, it should
-not be overridden during configuration.
-Yes
-Integer
-stateSet
-The state set id for the state set used by this
-Effecter. If this field is non-null in the
-ControllerCapabilities object, it should not
-be overridden during configuration.
-Yes
-Integer
-usedStates
-A bitfield that defines which states in the
-state set are used. Bit 0, corresponds to the
-first state in the set, bit-1, the second state
-and so forth. A bit value of 1 means the
-state is used, otherwise the state is not used.
-No
-Bitfield
-stateWhenHigh
-The state that, when set, will result in a
-binary High state of the Effecter’s output pin
-(or virtual pin). The value of this field
-should correspond to one of the states in the
-configured state set. If this field is non-null
-in the ControllerCapabilities object, it
-should not be overridden during
-configuration.
-Yes
-Integer
-stateWhenLow
-The state that, when set, will result in a
-binary Low state of the Effecter’s output pin
-(or virtual pin). The value of this field
-should correspond to one of the states in the
-configured state set. If this field is non-null
-in the ControllerCapabilities object, it
-should not be overridden during
-configuration.
-Yes
-Integer
-possibleStates
-A 32-bit bitfield where each bit specifies
-whether or not a specific state in the state set
-is used. A value of 1 in the bit specifies that
-the state is used, a value of 0 specifies that it
-is not. As an example, a value of 3 for this
-field means that states 0 and 1 are both used,
-all others are not.
-No
-Integer
-defaultState
-The default state for the effecter when it is
-enabled.
-Yes
-Integer
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| bindingType | A string that identifies the binding type as a state Effecter binding. | No | “stateEffecter” |
+| name | A unique name that identifies this IOBinding from all other IOBinding objects within the LogicalEntity. For required I/O bindings, the name should match those found in sections 4.3.5.6 and 4.3.6.8 of this document. | No | String |
+| includeInPdr | If value of this field is true, a corresponding No PDR record should be generated in the firmware build process. If the value of this field is false, a PDR record will not be generated – this is useful in cases where binding of a function is required, but no direct interaction with the Effecter is allowed at runtime. | No | Boolean |
+| required | true if this I/O binding is required. False of the binding is optional for the specific LogicalEntity. | No | Boolean |
+| description | A text description of the function of the I/O binding that may be useful to the Sensor/Effecter integrator. | Yes | String |
+| isVirtual | The value of this field should be set to true if the I/O binding is virtual. Virtual Effecters will not be bound to physical I/O and will not be checked against I/O constraints when configured. | No | Boolean |
+| effecterID | The effecter ID for the effecter bound to this channel. This field may only be null if the effecter is not included in the PDR. | Yes | Integer allowedInterfaceTypes An array of allowed physical interface types that this channel can be configured to work with. See section 5.2.1.1 for possible values. For virtual Effecters this array should be blank. |
+| No | Array of String boundChannel The actual channel the Effecter is configured Yes to use. The value of this field should be null for LogicalEntities in the ControllerCapabilities. When the device is configured, the value of this field will be changed to match a channel from the channels array. IOBindings for virtual Effecters should always leave this value null. | Yes | String |
+| stateSetVendorIANA | The vendor id associated with the state set for this Effecter. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| stateSet | The state set id for the state set used by this Effecter. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| usedStates | A bitfield that defines which states in the state set are used. Bit 0, corresponds to the first state in the set, bit-1, the second state and so forth. A bit value of 1 means the state is used, otherwise the state is not used. | No |  |
+| Bitfield | stateWhenHigh The state that, when set, will result in a binary High state of the Effecter’s output pin (or virtual pin). The value of this field should correspond to one of the states in the configured state set. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| stateWhenLow | The state that, when set, will result in a binary Low state of the Effecter’s output pin (or virtual pin). The value of this field should correspond to one of the states in the configured state set. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| possibleStates | A 32-bit bitfield where each bit specifies whether or not a specific state in the state set is used. A value of 1 in the bit specifies that the state is used, a value of 0 specifies that it is not. As an example, a value of 3 for this field means that states 0 and 1 are both used, all others are not. | No | Integer |
+| defaultState | The default state for the effecter when it is enabled. | Yes | Integer |
 
 
-### Table 44: IOBinding object structure for Numeric Sensors
+### Table 44:  IOBinding object structure for Numeric Sensors
 
-```
-Keyword Description Nullable Data Type
-bindingType
-A string that identifies the binding
-type as a numeric Sensor binding.
-No
-“numericSensor”
-name
-A unique name that identifies this
-IOBinding from all other IOBinding
-objects within the LogicalEntity. For
-required I/O bindings, the name
-should match those found in section
-sections 4.3.5.6 and 4.3.6.8 of this
-document.
-No
-String
-includeInPdr
-If value of this field is true, a
-corresponding PDR record should be
-generated in the firmware build
-process. If the value of this field is
-false, a PDR record will not be
-generated – this is useful in cases
-where binding of a function is
-required, but no direct interaction
-with the Sensor is allowed at
-runtime.
-No
-Boolean
-required
-True if this I/O binding is required.
-False if the binding Sensor is
-optional for the specific
-LogicalEntity.
-No
-Boolean
-description
-A text description of the function of
-the I/O binding that may be useful to
-the Sensor/Effecter integrator.
-Yes
-String
-isVirtual
-The value of this field should be set
-to true if the I/O binding is virtual.
-Virtual Sensors will not be bound to
-physical I/O and will not be checked
-against I/O constraints when
-configured.
-No
-Boolean
-sensorID
-The sensor ID for the effecter bound
-to this channel. This field may only
-be null if the effecter is not included
-in the PDR.
-Yes
-Integer
-allowedInterfaceTypes
-An array of allowed electrical
-interface types that this binding can
-be configured to work with. See
-section 5.2.1.1for possible values.
-For virtual Sensors this array should
-be blank.
-No
-Array of String
-sensor
-A SensorDefinition object that
-defines the Sensor characteristics for
-the Sensor that is bound to this I/O
-function. It is intended that this field
-be null in the ControllerCapabilities
-structure. In the process of
-configuration it will be populated
-with a SensorDefintion. Virtual
-Sensors should leave this field null.
-Yes
-SensorDefinition object (null expected)
-inputCurve
-An array of DataPoint objects that
-specify the input curve of the
-sampler input (see section 3.3.1).
-DataPoint objects are defined in
-section 5.2.4.5.
-<br>The input value for each point on the
-curve represent the input to the
-controller’s input circuitry. The
-output values represent the quantity
-present at the controller’s input pin.
-Physical meaning for the values at
-the input pin vary by interface type.
-They are:
-<br>- analog interface types: A
-voltage in Volts
-<br>- rate interface types: A
-frequency in Hertz
-<br>- count/quadrature interface
-types: a count of pulses
-Yes
-Array of at least two DataPoint objects
-boundChannel
-The actual channel the Sensor is
-configured to use. The value of this
-field should be null for
-LogicalEntities in the
-ControllerCapabilities. When the
-device is configured, the value of
-this field will be changed to match a
-channel from the channels array.
-IOBindings for virtual Sensors
-should always leave this value null.
-Yes
-String
-inputGearingRatio
-The gearing ratio expressed in terms
-of physical units to measured units
-expressed as a real number. The
-measured quantity will be the
-physical quantity divided by this
-amount.
-Yes
-Real
-physicalBaseUnit
-The base units for the physical
-quantity measured by this I/O
-binding (or the virtual base units for
-virtual Sensors). The values for this
-field are defined identically to the
-baseUnit field in the PLDM
-specification.
-Yes
-Integer
-physicalUnitModifier
-The unit modifier for the physical
-quantity measured by this I/O
-binding (or the virtual unit modifier
-for virtual Sensors). The value for
-this field is defined identically to the
-baseUnitModifier field in the PLDM
-specification.
-Yes
-Integer
-physicalRateUnit
-The base unit modifier for the
-physical quantity measured by this
-I/O binding (or the virtual base unit
-modifier for virtual Sensors). The
-value for this field is defined
-identically to the baseUnitModifier
-field in the PLDM specification.
-Yes
-Integer
-physicalAuxUnit
-The aux unit for the physical
-quantity measured by this I/O
-binding (or the virtual aux unit for
-virtual Sensors). The value for this
-field is defined identically to the
-auxUnit field in the PLDM
-specification.
-Yes
-Integer
-rel
-The relationship between the base
-unit and the auxiliary unit, as
-follows:
-<br>value = { “dividedBy”, “multipliedBy”}
-<br>“dividedBy” implies a "/" or "per" relationship, such as "per foot"
-<br>“multipliedBy” implies a "*" operation, such as "foot*lbs (foot-lbs)"
-<br>This field definition is derived from an identically named field in PLDM Numeric Sensor / Effecter PDRs as defined by DSP0248.
-Yes
-String
-physicalAuxUnitModifier 
-The aux unit modifier for the
-physical quantity measured by this
-I/O binding (or the virtual aux unit
-modifier for virtual Sensors). The
-value for this field is defined
-identically to the auxUnitModifier
-field in the PLDM specification.
-Yes
-Integer
-physicalAuxRateUnit
-The aux rate unit for the physical
-quantity measured by this I/O
-binding (or the virtual base unit
-modifier for virtual Sensors). The
-value for this field is defined
-identically to the auxRateUnit field
-in the PLDM specification.
-Yes
-Integer
-normalMax
-The normalMax threshold value as
-defined in PLDM specification. If
-not used or not defined, this value
-may be null. When specified, this
-should be expressed in terms of the
-physical units.
-Yes
-Real
-normalMin
-The normalMin threshold value as
-defined in PLDM specification. If
-not used or not defined, this value
-may be null. When specified, this
-should be expressed in terms of the
-physical units.
-Yes
-Real
-upperThresholdWarning
-The upper warning threshold value
-as defined in PLDM specification. If
-not used or not defined, this value
-may be null. When specified, this
-should be expressed in terms of the
-physical units.
-Yes
-Real
-upperThresholdCritical
-The upper critical threshold value as
-defined in PLDM specification. If
-not used or not defined, this value
-may be null. When specified, this
-should be expressed in terms of the
-physical units.
-Yes
-Real
-upperThresholdFatal
-The upper fatal threshold value as
-defined in PLDM specification. If
-not used or not defined, this value
-may be null. When specified, this
-should be expressed in terms of the
-physical units.
-Yes
-Real
-lowerThresholdWarning
-The lower warning threshold value
-as defined in PLDM specification. If
-not used or not defined, this value
-may be null. When specified, this
-should be expressed in terms of the
-physical units.
-Yes
-Real
-lowerThresholdCritical
-The lower critical threshold value as
-defined in PLDM specification. If
-not used or not defined, this value
-may be null. When specified, this
-should be expressed in terms of the
-physical units.
-Yes
-Real
-lowerThresholdFatal
-The lower fatal threshold value as
-defined in PLDM specification. If
-not used or not defined, this value
-may be null. When specified, this
-should be expressed in terms of the
-physical units.
-Yes
-Real
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| bindingType | A string that identifies the binding type as a numeric Sensor binding. | No | “numericSensor” |
+| name | A unique name that identifies this IOBinding from all other IOBinding objects within the LogicalEntity. For required I/O bindings, the name should match those found in section sections 4.3.5.6 and 4.3.6.8 of this document. | No | String |
+| includeInPdr | If value of this field is true, a corresponding PDR record should be generated in the firmware build process. If the value of this field is false, a PDR record will not be generated – this is useful in cases where binding of a function is required, but no direct interaction with the Sensor is allowed at runtime. | No | Boolean |
+| required | True if this I/O binding is required. False if the binding Sensor is optional for the specific LogicalEntity. | No | Boolean |
+| description | A text description of the function of the I/O binding that may be useful to the Sensor/Effecter integrator. | Yes | String |
+| isVirtual | The value of this field should be set to true if the I/O binding is virtual. Virtual Sensors will not be bound to physical I/O and will not be checked against I/O constraints when configured. | No | Boolean |
+| sensorID | The sensor ID for the effecter bound to this channel. This field may only be null if the effecter is not included in the PDR. | Yes | Integer |
+| allowedInterfaceTypes | An array of allowed electrical interface types that this binding can be configured to work with. See section 5.2.1.1for possible values. For virtual Sensors this array should be blank. | No | Array of String |
+| sensor | A SensorDefinition object that defines the Sensor characteristics for the Sensor that is bound to this I/O function. It is intended that this field be null in the ControllerCapabilities structure. In the process of configuration it will be populated with a SensorDefintion. Virtual Sensors should leave this field null. | Yes | SensorDefinition object (null expected) |
+| inputCurve | An array of DataPoint objects that specify the input curve of the sampler input (see section 3.3.1). DataPoint objects are defined in section 5.2.4.5. <br>The input value for each point on the curve represent the input to the controller’s input circuitry. The output values represent the quantity present at the controller’s input pin. Physical meaning for the values at the input pin vary by interface type. They are: <br>- analog interface types: A voltage in Volts <br>- rate interface types: A frequency in Hertz <br>- count/quadrature interface types: a count of pulses | Yes | Array of at least two DataPoint objects |
+| boundChannel | The actual channel the Sensor is configured to use. The value of this field should be null for LogicalEntities in the ControllerCapabilities. When the device is configured, the value of this field will be changed to match a channel from the channels array. IOBindings for virtual Sensors should always leave this value null. | Yes | String |
+| inputGearingRatio | The gearing ratio expressed in terms of physical units to measured units expressed as a real number. The measured quantity will be the physical quantity divided by this amount. | Yes | Real |
+| physicalBaseUnit | The base units for the physical quantity measured by this I/O binding (or the virtual base units for virtual Sensors). The values for this field are defined identically to the baseUnit field in the PLDM specification. | Yes | Integer |
+| physicalUnitModifier | The unit modifier for the physical quantity measured by this I/O binding (or the virtual unit modifier for virtual Sensors). The value for this field is defined identically to the baseUnitModifier field in the PLDM specification. | Yes | Integer |
+| physicalRateUnit | The base unit modifier for the physical quantity measured by this I/O binding (or the virtual base unit modifier for virtual Sensors). The value for this field is defined identically to the baseUnitModifier field in the PLDM specification. | Yes | Integer |
+| physicalAuxUnit | The aux unit for the physical quantity measured by this I/O binding (or the virtual aux unit for virtual Sensors). The value for this field is defined identically to the auxUnit field in the PLDM specification. | Yes | Integer |
+| rel | The relationship between the base unit and the auxiliary unit, as follows: <br>value = { “dividedBy”, “multipliedBy”} <br>“dividedBy” implies a "/" or "per" relationship, such as "per foot" <br>“multipliedBy” implies a "*" operation, such as "foot*lbs (foot-lbs)" <br>This field definition is derived from an identically named field in PLDM Numeric Sensor / Effecter PDRs as defined by DSP0248. | Yes | String |
+| physicalAuxUnitModifier | The aux unit modifier for the physical quantity measured by this I/O binding (or the virtual aux unit modifier for virtual Sensors). The value for this field is defined identically to the auxUnitModifier field in the PLDM specification. | Yes | Integer |
+| physicalAuxRateUnit | The aux rate unit for the physical quantity measured by this I/O binding (or the virtual base unit modifier for virtual Sensors). The value for this field is defined identically to the auxRateUnit field in the PLDM specification. | Yes | Integer |
+| normalMax | The normalMax threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| normalMin | The normalMin threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| upperThresholdWarning | The upper warning threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| upperThresholdCritical | The upper critical threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| upperThresholdFatal | The upper fatal threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| lowerThresholdWarning | The lower warning threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| lowerThresholdCritical | The lower critical threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| lowerThresholdFatal | The lower fatal threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
 
-### Table 45: IOBinding object structure for Numeric Effecters
+### Table 45:  IOBinding object structure for Numeric Effecters
 
-**Content lines:** 260
-
-```
-Keyword Description Nullable Data Type
-bindingType
-A string that identifies the binding
-type as a numeric Effecter binding.
-No
-“numericEffecter”
-name
-A unique name that identifies this
-IOBinding from all other IOBinding
-objects within the LogicalEntity. For
-required I/O bindings, the name
-should match those found in section
-sections 4.3.5.6 and 4.3.6.8 of this
-document.
-No
-String
-includeInPdr
-If value of this field is true, a
-corresponding PDR record should be
-generated in the firmware build
-process. If the value of this field is
-false, a PDR record will not be
-generated – this is useful in cases
-where binding of a function is
-required, but no direct interaction
-with the Effecter is allowed at
-runtime.
-No
-Boolean
-required
-true if this I/O binding is required.
-False if the binding Effecter is
-optional for the specific
-LogicalEntity.
-No
-Boolean
-description
-A text description of the function of
-the I/O binding that may be useful to
-the Sensor/Effecter integrator.
-Yes
-String
-isVirtual
-The value of this field should be set
-to true if the I/O binding is virtual.
-Virtual Effecters will not be bound
-to physical I/O and will not be
-checked against I/O constraints when
-configured.
-No
-Boolean
-effecterID
-The effecter ID for the effecter
-bound to this channel. This field
-may only be null if the effecter is not
-included in the PDR.
-Yes
-Integer
-allowedInterfaceTypes
-An array of allowed electrical
-interface types that this channel can
-be configured to work with. See
-section 5.2.1.1 for possible values.
-For virtual Effecters this array
-should be blank.
-No
-Array of String
-effecter
-An effecterDefinition object that
-defines the Effecter characteristics
-for the Effecter that is bound to this
-I/O function. It is intended that this
-field be null in the
-ControllerCapabilities structure. In
-the process of configuration it will
-be populated with an
-effecterDefinition. Virtual Effecters
-should leave this field null.
-Yes
-effecterDefinition object (null expected)
-outputCurve
-An array of DataPoint objects that
-specify the output curve of the
-sampler output (see section 3.3.1).
-DataPoint objects are defined in
-section 5.2.4.5.
-<br>The input value for each point on the
-curve represent the output from the
-controller’s pin. The output values
-of this curve represent the quantity
-present at the exit of any external
-output circuitry. Physical meaning
-for the values at the output pin vary
-by interface type. They are:
-<br>- analog interface types: A
-voltage in Volts
-<br>- pwm interface types: a duty
-cycle between 0 and 100
-<br>- rate interface types: A
-frequency in Hertz
-<br>- step_dir_enable – the number
-of steps to move.
-Yes
-Array of at least two DataPoint objects
-boundChannel
-The actual channel the Effecter is
-configured to use. The value of this
-field should be null for
-LogicalEntity object in the
-ControllerCapabilities. When the
-device is configured, the value of
-this field will be changed to match a
-channel from the channels array.
-IOBindings for virtual Effecters
-should always leave this value null.
-Yes
-String
-outputGearingRatio
-The gearing ratio expressed in terms
-of physical units to device output
-units expressed as a real number.
-The output quantity will be the
-physical quantity divided by this
-amount.
-Yes
-Real
-physicalBaseUnit
-The base units for the physical
-quantity controlled by this I/O
-binding (or the virtual base units for
-virtual Effecters). The values for
-this field are defined identically to
-the baseUnit field in the PLDM
-specification.
-Yes
-Integer
-physicalUnitModifier
-The unit modifier for the physical
-quantity controlled by this I/O
-binding (or the virtual unit modifier
-for virtual Effecters). The value for
-this field is defined identically to the
-baseUnitModifier field in the PLDM
-specification.
-Yes
-Integer
-physicalRateUnit
-The base unit modifier for the
-physical quantity controlled by this
-I/O binding (or the virtual base unit
-modifier for virtual Effecters). The
-value for this field is defined
-identically to the baseUnitModifier
-field in the PLDM specification.
-Yes
-Integer
-physicalAuxUnit
-The aux unit for the physical
-quantity controlled by this I/O
-binding (or the virtual aux unit for
-virtual Effecters). The value for this
-field is defined identically to the
-auxUnit field in the PLDM
-specification.
-Yes
-Integer
-rel
-The relationship between the base
-unit and the auxiliary unit, as
-follows:
-<br>value = { “dividedBy”,
-“multipliedBy”}
-<br>“dividedBy” implies a "/" or "per"
-relationship, such as "per foot"
-<br>“multipliedBy” implies a "*"
-operation, such as "foot*lbs (footlbs)"
-<br>This field definition is derived from
-an identically named field in PLDM
-Numeric Sensor / Effecter PDRs as
-defined by DSP0248.
-No
-String
-physicalAuxUnitModifier 
-The aux unit modifier for the
-physical quantity controlled by this
-I/O binding (or the virtual aux unit
-modifier for virtual Effecters). The
-value for this field is defined
-identically to the auxUnitModifier
-field in the PLDM specification.
-Yes
-Integer
-physicalAuxRateUnit
-The aux rate unit for the physical
-quantity controlled by this I/O
-binding (or the virtual base unit
-modifier for virtual Sensors). The
-value for this field is defined
-identically to the auxRateUnit field
-in the PLDM specification.
-Yes
-Integer
-physicalDefaultValue
-The default value for the physical
-quantity controlled by this I/O
-binding when it is enabled. This
-value is specified in real-world units.
-Yes
-Real
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| bindingType | A string that identifies the binding type as a numeric Effecter binding. | No | “numericEffecter” |
+| name | A unique name that identifies this IOBinding from all other IOBinding objects within the LogicalEntity. For required I/O bindings, the name should match those found in section sections 4.3.5.6 and 4.3.6.8 of this document. | No | String |
+| includeInPdr | If value of this field is true, a corresponding PDR record should be generated in the firmware build process. If the value of this field is false, a PDR record will not be generated – this is useful in cases where binding of a function is required, but no direct interaction with the Effecter is allowed at runtime. | No | Boolean |
+| required | true if this I/O binding is required. False if the binding Effecter is optional for the specific LogicalEntity. | No | Boolean |
+| description | A text description of the function of the I/O binding that may be useful to the Sensor/Effecter integrator. | Yes | String |
+| isVirtual | The value of this field should be set to true if the I/O binding is virtual. Virtual Effecters will not be bound to physical I/O and will not be checked against I/O constraints when configured. | No | Boolean |
+| effecterID | The effecter ID for the effecter bound to this channel. This field may only be null if the effecter is not included in the PDR. | Yes | Integer |
+| allowedInterfaceTypes | An array of allowed electrical interface types that this channel can be configured to work with. See section 5.2.1.1 for possible values. For virtual Effecters this array should be blank. | No | Array of String |
+| effecter | An effecterDefinition object that defines the Effecter characteristics for the Effecter that is bound to this I/O function. It is intended that this field be null in the ControllerCapabilities structure. In the process of configuration it will be populated with an effecterDefinition. Virtual Effecters should leave this field null. | Yes | effecterDefinition object (null expected) |
+| outputCurve | An array of DataPoint objects that specify the output curve of the sampler output (see section 3.3.1). DataPoint objects are defined in section 5.2.4.5. <br>The input value for each point on the curve represent the output from the controller’s pin. The output values of this curve represent the quantity present at the exit of any external output circuitry. Physical meaning for the values at the output pin vary by interface type. They are: <br>- analog interface types: A voltage in Volts <br>- pwm interface types: a duty cycle between 0 and 100 <br>- rate interface types: A frequency in Hertz <br>- step_dir_enable – the number of steps to move. | Yes | Array of at least two DataPoint objects |
+| boundChannel | The actual channel the Effecter is configured to use. The value of this field should be null for LogicalEntity object in the ControllerCapabilities. When the device is configured, the value of this field will be changed to match a channel from the channels array. IOBindings for virtual Effecters should always leave this value null. | Yes | String |
+| outputGearingRatio | The gearing ratio expressed in terms of physical units to device output units expressed as a real number. The output quantity will be the physical quantity divided by this amount. | Yes | Real |
+| physicalBaseUnit | The base units for the physical quantity controlled by this I/O binding (or the virtual base units for virtual Effecters). The values for this field are defined identically to the baseUnit field in the PLDM specification. | Yes | Integer |
+| physicalUnitModifier | The unit modifier for the physical quantity controlled by this I/O binding (or the virtual unit modifier for virtual Effecters). The value for this field is defined identically to the baseUnitModifier field in the PLDM specification. | Yes | Integer |
+| physicalRateUnit | The base unit modifier for the physical quantity controlled by this I/O binding (or the virtual base unit modifier for virtual Effecters). The value for this field is defined identically to the baseUnitModifier field in the PLDM specification. | Yes | Integer |
+| physicalAuxUnit | The aux unit for the physical quantity controlled by this I/O binding (or the virtual aux unit for virtual Effecters). The value for this field is defined identically to the auxUnit field in the PLDM specification. | Yes | Integer |
+| rel | The relationship between the base unit and the auxiliary unit, as follows: <br>value = { “dividedBy”, “multipliedBy”} <br>“dividedBy” implies a "/" or "per" relationship, such as "per foot" <br>“multipliedBy” implies a "*" operation, such as "foot*lbs (footlbs)" <br>This field definition is derived from an identically named field in PLDM Numeric Sensor / Effecter PDRs as defined by DSP0248. | No | String |
+| physicalAuxUnitModifier | The aux unit modifier for the physical quantity controlled by this I/O binding (or the virtual aux unit modifier for virtual Effecters). The value for this field is defined identically to the auxUnitModifier field in the PLDM specification. | Yes | Integer |
+| physicalAuxRateUnit | The aux rate unit for the physical quantity controlled by this I/O binding (or the virtual base unit modifier for virtual Sensors). The value for this field is defined identically to the auxRateUnit field in the PLDM specification. | Yes | Integer |
+| physicalDefaultValue | The default value for the physical quantity controlled by this I/O binding when it is enabled. This value is specified in real-world units. | Yes | Real |
 
 
-### Table 46: DataPoint object structure
+### Table 46:  DataPoint object structure
 
-```
-Keyword Description Nullable Data Type
-in
-The input value
-No
-Real
-out
-The resulting output value
-No
-Real
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| in | The input value | No | Real |
+| out | The resulting output value | No | Real |
 
 
-### Table 47: Parameter object structure for Numeric parameters
+### Table 47:  Parameter object structure for Numeric parameters
 
-```
-Keyword Description Nullable Data Type
-parameterType
-A string that identifies the parameter
-type as a numeric parameter. The
-value of this string should be
-“integer” for signed or unsigned
-integers or “real” for real-valued
-parameters.
-No
-String (“integer” or “real”)
-name
-A unique name that identifies this
-Parameter from all other Parameter
-objects within the LogicalEntity.
-No
-String
-description
-A text description of the parameter
-that may be useful to the
-sensor/effecter integrator.
-Yes
-String
-value
-The value of the parameter. If null,
-the parameter must be set during the
-configuration process. If non-null,
-the value cannot be altered by the
-configuration process.
-by the parameter
-type
-Yes
-Numeric of the same type specified
-defaultValue
-Provided as a hint to the
-configuration process. The default
-value of the parameter if no other
-value is specified. If null, the
-configuration process will not
-assume a default value.
-Yes
-Numeric of the same type specified by the parameter type
-maxValue
-The maximum value allowed for this
-parameter. If null, the configuration
-process should not check for a
-maximum value.
-Yes
-Numeric of the same type specified by the parameter type
-minValue
-The minimum value allowed for this
-parameter. If null, the configuration
-process should not check for a
-minimum value.
-Yes
-Numeric of the same type specified by the parameter type
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| parameterType | A string that identifies the parameter type as a numeric parameter. The value of this string should be “integer” for signed or unsigned integers or “real” for real-valued parameters. | No | String (“integer” or “real”) |
+| name | A unique name that identifies this Parameter from all other Parameter objects within the LogicalEntity. | No | String |
+| description | A text description of the parameter that may be useful to the sensor/effecter integrator. | Yes | String |
+| value | The value of the parameter. If null, the parameter must be set during the configuration process. If non-null, the value cannot be altered by the configuration process. by the parameter type | Yes | Numeric of the same type specified |
+| defaultValue | Provided as a hint to the configuration process. The default value of the parameter if no other value is specified. If null, the configuration process will not assume a default value. | Yes | Numeric of the same type specified by the parameter type |
+| maxValue | The maximum value allowed for this parameter. If null, the configuration process should not check for a maximum value. | Yes | Numeric of the same type specified by the parameter type |
+| minValue | The minimum value allowed for this parameter. If null, the configuration process should not check for a minimum value. | Yes | Numeric of the same type specified by the parameter type |
 
-### Table 48: Parameter object structure for enumerated parameters
+### Table 48:  Parameter object structure for enumerated parameters
 
-```
-Keyword Description Nullable Data Type
-parameterType
-A string that identifies the
-Parameter type as an enumerated
-parameter.
-No
-“enum”
-name
-A unique name that identifies this
-Parameter from all other Parameter
-objects within the LogicalEntity.
-No
-String
-description
-A text description of the parameter
-that may be useful to the
-sensor/effecter integrator.
-Yes
-String
-value
-The value of the parameter. If null,
-the parameter must be set during the
-configuration process. If non-null,
-the value cannot be altered by the
-configuration process.
-Yes
-String
-defaultValue
-Provided as a hint to the
-configuration process. The default
-value of the parameter if no other
-value is specified. If null, the
-configuration process will not
-assume a default value.
-Yes
-String
-choices
-An array of strings where each
-element specifies a possible
-configuration choice.
-Yes
-Array of String
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| parameterType | A string that identifies the Parameter type as an enumerated parameter. | No | “enum” |
+| name | A unique name that identifies this Parameter from all other Parameter objects within the LogicalEntity. | No | String |
+| description | A text description of the parameter that may be useful to the sensor/effecter integrator. | Yes | String |
+| value | The value of the parameter. If null, the parameter must be set during the configuration process. If non-null, the value cannot be altered by the configuration process. | Yes | String |
+| defaultValue | Provided as a hint to the configuration process. The default value of the parameter if no other value is specified. If null, the configuration process will not assume a default value. | Yes | String |
+| choices | An array of strings where each element specifies a possible configuration choice. | Yes | Array of String |
 
 
-### Table 49: SensorDefinition JSON object structure
+### Table 49:  SensorDefinition JSON object structure
 
-```
-Keyword Description Nullable Data Type
-name
-A human-readable name that identifies
-the sensor model. This should also be
-the file name (minus extension) of the
-sensor JSON file.
-No
-String
-manufacturer
-The manufacturer of the sensor.
-No
-String
-partNumber
-The manufacturer’s part number for the
-sensor.
-No
-String
-description
-A text description of the sensor that may
-be helpful in understanding its
-capabilities.
-No
-String
-supportedInterfaces
-An array of electrical interface types that
-this effecter can work with. The
-interface must match one of those found
-in section 5.2.1.1
-No
-Array of String (cannot be empty)
-maxSampleRate
-The maximum allowed sample rate of
-this sensor, expressed in Hz. If null,
-there is no maximum sample rate.
-Yes
-Number
-baseUnit
-A numeric descriptor for the base units
-of the sensor. The values for this field
-are defined in DSP0248. This field
-applies to the physical quantity that is
-measured by the sensor (as opposed to
-the output of the sensor).
-No
-Integer
-unitModifier
-A numeric descriptor for the base unit
-modifier for the sensor. The values for
-this field are defined in DSP0248. This
-field applies to the physical quantity that
-is measured by the sensor (as opposed to
-the output of the sensor).
-No
-Integer
-rateUnit
-A numeric descriptor for the rate units of
-the sensor. The values for this field are
-defined in DSP0248. This field applies
-to the physical quantity that is measured
-by the sensor (as opposed to the output
-of the sensor).
-No
-Integer
-auxUnit
-A numeric descriptor for the aux units of
-the sensor. The values for this field are
-defined in DSP0248. This field applies
-to the physical quantity that is measured
-by the sensor (as opposed to the output
-of the sensor).
-No
-Integer
-auxUnitModifier
-A numeric descriptor for the aux unit
-modifier for the sensor. The values for
-this field are defined in DSP0248. This
-field applies to the physical quantity that
-is measured by the sensor (as opposed to
-the output of the sensor).
-No
-Integer
-rel
-The relationship between the base unit
-and the auxiliary unit, as follows:
-<br>value = { “dividedBy”, “multipliedBy”}
-<br>“dividedBy” implies a "/" or "per"
-relationship, such as "per foot"
-<br>“multipliedBy” implies a "*" operation,
-such as "foot*lbs (foot-lbs)"
-<br>This field definition is derived from an
-identically named field in PLDM
-Numeric Sensor / Effecter PDRs as
-defined by DSP0248.
-No
-String
-auxRateUnit
-A numeric descriptor for the aux rate
-unit modifier for the sensor. The values
-for this field are defined in DSP0248.
-This field applies to the physical
-quantity that is measured by the sensor
-(as opposed to the output of the sensor).
-No
-Integer
-plusAccuracy
-The maximum amount the sensor may
-overreport the actual reading. This value
-should include all sources of inaccuracy
-including any loss of accuracy from the
-response curve inaccuracy.
-No
-Real
-minusAccuracy
-The maximum amount the sensor may
-underreport the actual reading. This
-value should include all sources of
-inaccuracy including any loss of
-accuracy from the response curve
-inaccuracy.
-No
-Real
-outputUnits
-The output (electrical) units of the
-sensor. This may be useful to the
-sensor/effecter integrator when defining
-the input circuitry and input curve for the
-controller.
-No
-String
-responseCurve
-An array of DataPoint objects that
-specify the response curve of the sensor.
-DataPoint objects are described in
-section 5.2.4.5
-No
-Array of at least two DataPoint objects
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| name | A human-readable name that identifies the sensor model. This should also be the file name (minus extension) of the sensor JSON file. | No | String |
+| manufacturer | The manufacturer of the sensor. | No | String |
+| partNumber | The manufacturer’s part number for the sensor. | No | String |
+| description | A text description of the sensor that may be helpful in understanding its capabilities. | No | String |
+| supportedInterfaces | An array of electrical interface types that this effecter can work with. The interface must match one of those found in section 5.2.1.1 | No | Array of String (cannot be empty) |
+| maxSampleRate | The maximum allowed sample rate of this sensor, expressed in Hz. If null, there is no maximum sample rate. | Yes | Number |
+| baseUnit | A numeric descriptor for the base units of the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
+| unitModifier | A numeric descriptor for the base unit modifier for the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
+| rateUnit | A numeric descriptor for the rate units of the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
+| auxUnit | A numeric descriptor for the aux units of the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
+| auxUnitModifier | A numeric descriptor for the aux unit modifier for the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
+| rel | The relationship between the base unit and the auxiliary unit, as follows: <br>value = { “dividedBy”, “multipliedBy”} <br>“dividedBy” implies a "/" or "per" relationship, such as "per foot" <br>“multipliedBy” implies a "*" operation, such as "foot*lbs (foot-lbs)" <br>This field definition is derived from an identically named field in PLDM Numeric Sensor / Effecter PDRs as defined by DSP0248. | No | String |
+| auxRateUnit | A numeric descriptor for the aux rate unit modifier for the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
+| plusAccuracy | The maximum amount the sensor may overreport the actual reading. This value should include all sources of inaccuracy including any loss of accuracy from the response curve inaccuracy. | No | Real |
+| minusAccuracy | The maximum amount the sensor may underreport the actual reading. This value should include all sources of inaccuracy including any loss of accuracy from the response curve inaccuracy. | No | Real |
+| outputUnits | The output (electrical) units of the sensor. This may be useful to the sensor/effecter integrator when defining the input circuitry and input curve for the controller. | No | String |
+| responseCurve | An array of DataPoint objects that specify the response curve of the sensor. DataPoint objects are described in section 5.2.4.5 | No | Array of at least two DataPoint objects |
 
-### Table 50: EffecterDefinition JSON object structure
+### Table 50:  EffecterDefinition JSON object structure
 
-```
-Keyword Description Nullable Data Type
-name
-A human-readable name that identifies
-the effecter model. This should also be
-the file name (minus extension) of the
-effecter JSON file.
-No
-String
-manufacturer
-The manufacturer of the effecter.
-No
-String
-partNumber
-The manufacturer’s part number for the
-effecter.
-No
-String
-description
-A text description of the sensor that may
-be helpful in understanding its
-capabilities.
-No
-String
-supportedInterfaces
-An array of electrical interface types that No
-this sensor can work with. The interface
-must match one of those found in section
-5.2.1.1
-Array of String (cannot be empty)
-maxSampleRate
-The maximum allowed output sample
-rate for this effecter, expressed in Hz. If
-null, there is no maximum sample rate.
-Yes
-Number
-baseUnit
-A numeric descriptor for the base units
-of the effecter. The values for this field
-are defined in DSP0248. This field
-applies to the physical quantity that is
-output by the effecter (as opposed to the
-control input of the effecter).
-No
-Integer
-unitModifier
-A numeric descriptor for the base unit
-modifier for the effecter. The values for
-this field are defined in DSP0248. This
-field applies to the physical quantity that
-is output by the effecter (as opposed to
-the control input of the effecter).
-No
-Integer
-rateUnit
-A numeric descriptor for the rate units of
-the effecter. The values for this field are
-defined in DSP0248. This field applies
-to the physical quantity that is controlled
-by the effecter (as opposed to the control
-input of the effecter).
-No
-Integer
-auxUnit
-A numeric descriptor for the aux units of
-the effecter. The values for this field are
-defined in DSP0248. This field applies
-to the physical quantity that is controlled
-by the effecter (as opposed to the control
-input of the effecter).
-No
-Integer
-auxUnitModifier
-A numeric descriptor for the aux unit
-modifier for the effecter. The values for
-this field are defined in DSP0248. This
-field applies to the physical quantity that
-is controlled by the effecter (as opposed
-to the control input of the effecter).
-No
-Integer
-rel
-The relationship between the base unit
-and the auxiliary unit, as follows:
-<br>value = { “dividedBy”, “multipliedBy”}
-<br>“dividedBy” implies a "/" or "per"
-relationship, such as "per foot"
-<br>“multipliedBy” implies a "*" operation,
-such as "foot*lbs (foot-lbs)"
-<br>This field definition is derived from an
-identically named field in PLDM
-Numeric Sensor / Effecter PDRs as
-defined by DSP0248.
-No
-String
-auxRateUnit
-A numeric descriptor for the aux rate
-unit modifier for the effecter. The values
-for this field are defined in DSP0248.
-This field applies to the physical
-quantity that is controlled by the effecter
-(as opposed to the control input of the
-effecter).
-No
-Integer
-plusAccuracy
-The maximum amount the effecter
-output may overshoot the requested
-value (under normal conditions). This
-value should include all sources of
-inaccuracy including any loss of
-accuracy from the response curve
-inaccuracy.
-No
-Real
-minusAccuracy
-The maximum amount the sensor may
-undershoot the requested value (under
-normal conditions). This value should
-include all sources of inaccuracy
-including any loss of accuracy from the
-response curve inaccuracy.
-No
-Real
-inputUnits
-The input (electrical) units of the
-effecter. This may be useful to the
-sensor/effecter integrator when defining
-the output circuitry and output curve for
-the controller.
-No
-String
-responseCurve
-An array of DataPoint objects that
-specify the response curve of the
-effecter. DataPoint objects are described
-in section 5.2.4.5.
-No
-Array of at least two DataPoint objects
-ratedMax
-The maximum rated output value of the
-effecter. If null, there is no rated
-maximum value
-Yes
-Real
-nominalValue
-The nominal rated value of the effecter.
-If null, there is no nominal value.
-Yes
-Real
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| name | A human-readable name that identifies the effecter model. This should also be the file name (minus extension) of the effecter JSON file. | No | String |
+| manufacturer | The manufacturer of the effecter. | No | String |
+| partNumber | The manufacturer’s part number for the effecter. | No | String |
+| description | A text description of the sensor that may be helpful in understanding its capabilities. | No | String |
+| supportedInterfaces | An array of electrical interface types that No this sensor can work with. The interface must match one of those found in section 5.2.1.1 Array of String (cannot be empty) maxSampleRate The maximum allowed output sample rate for this effecter, expressed in Hz. If null, there is no maximum sample rate. | Yes | Number |
+| baseUnit | A numeric descriptor for the base units of the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is output by the effecter (as opposed to the control input of the effecter). | No | Integer |
+| unitModifier | A numeric descriptor for the base unit modifier for the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is output by the effecter (as opposed to the control input of the effecter). | No | Integer |
+| rateUnit | A numeric descriptor for the rate units of the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is controlled by the effecter (as opposed to the control input of the effecter). | No | Integer |
+| auxUnit | A numeric descriptor for the aux units of the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is controlled by the effecter (as opposed to the control input of the effecter). | No | Integer |
+| auxUnitModifier | A numeric descriptor for the aux unit modifier for the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is controlled by the effecter (as opposed to the control input of the effecter). | No | Integer |
+| rel | The relationship between the base unit and the auxiliary unit, as follows: <br>value = { “dividedBy”, “multipliedBy”} <br>“dividedBy” implies a "/" or "per" relationship, such as "per foot" <br>“multipliedBy” implies a "*" operation, such as "foot*lbs (foot-lbs)" <br>This field definition is derived from an identically named field in PLDM Numeric Sensor / Effecter PDRs as defined by DSP0248. | No | String |
+| auxRateUnit | A numeric descriptor for the aux rate unit modifier for the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is controlled by the effecter (as opposed to the control input of the effecter). | No | Integer |
+| plusAccuracy | The maximum amount the effecter output may overshoot the requested value (under normal conditions). This value should include all sources of inaccuracy including any loss of accuracy from the response curve inaccuracy. | No | Real |
+| minusAccuracy | The maximum amount the sensor may undershoot the requested value (under normal conditions). This value should include all sources of inaccuracy including any loss of accuracy from the response curve inaccuracy. | No | Real |
+| inputUnits | The input (electrical) units of the effecter. This may be useful to the sensor/effecter integrator when defining the output circuitry and output curve for the controller. | No | String |
+| responseCurve | An array of DataPoint objects that specify the response curve of the effecter. DataPoint objects are described in section 5.2.4.5. | No | Array of at least two DataPoint objects |
+| ratedMax | The maximum rated output value of the effecter. If null, there is no rated maximum value | Yes | Real |
+| nominalValue | The nominal rated value of the effecter. If null, there is no nominal value. | Yes | Real |
 
-### Table 51: ConfigFile object structure
+### Table 51:  ConfigFile object structure
 
-```
-Keyword Description Nullable Data Type
-capabilities
-The original (unmodified)
-ControllerCapabilities object from the
-controller device manufacturer
-No
-ControllerCapabilities object
-configuration
-The configuration for the device.
-No
-Configuration object
-oemStateSets
-An array of state set definitions for the oem
-state sets used by this configuration.
-No
-Array of stateSet objects
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| capabilities | The original (unmodified) ControllerCapabilities object from the controller device manufacturer | No | ControllerCapabilities object |
+| configuration | The configuration for the device. | No | Configuration object |
+| oemStateSets | An array of state set definitions for the oem state sets used by this configuration. | No | Array of stateSet objects |
 
 
-### Table 52: OemStateSet object structure
+### Table 52:  OemStateSet object structure
 
-**Content lines:** 45
-
-```
-Keyword Description Nullable Data Type
-name
-The name of the state set.
-No
-String
-vendorName
-The name of the vendor that is
-responsible for this state set
-No
-String
-vendorIANA
-The IANA enterprise number for
-the vendor that defined the OEM
-state set.
-No
-Integer
-stateSetID
-The OEM state set ID that
-uniquely identifies this state set
-from all other state sets from the
-same vendor.
-No
-Integer
-oemStateValueRecords
-An array of one or more
-oemStateValueRecord objects
-that define each state in the set.
-No
-Array of oemStateSetValueRecord objects
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| name | The name of the state set. | No | String |
+| vendorName | The name of the vendor that is responsible for this state set | No | String |
+| vendorIANA | The IANA enterprise number for the vendor that defined the OEM state set. | No | Integer |
+| stateSetID | The OEM state set ID that uniquely identifies this state set from all other state sets from the same vendor. | No | Integer |
+| oemStateValueRecords | An array of one or more oemStateValueRecord objects that define each state in the set. | No | Array of oemStateSetValueRecord objects |
 
 
-### Table 53: OemStateSetValueRecord object structure
+### Table 53:  OemStateSetValueRecord object structure
 
-```
-Keyword Description Nullable Data Type
-minStateValue
-The lowest state enumeration value that
-corresponds to this state.
-No
-Unsigned Integer
-maxStateValue
-The highest state enumeration value that
-corresponds to this state.
-No
-Unsigned Integer
-languageTags
-An array of one or more strings that hold a
-language tag for the state corresponding
-state stateName array. Language tags are
-defined in RFC4646.
-No
-Array of String
-stateName
-An array of state names for this state. Each
-element in the array represents the state
-name in the language corresponding to the
-same element in the languageTags array.
-No
-Array of String
-```
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| minStateValue | The lowest state enumeration value that corresponds to this state. | No | Unsigned Integer |
+| maxStateValue | The highest state enumeration value that corresponds to this state. | No | Unsigned Integer |
+| languageTags | An array of one or more strings that hold a language tag for the state corresponding state stateName array. Language tags are defined in RFC4646. | No | Array of String |
+| stateName | An array of state names for this state. Each element in the array represents the state name in the language corresponding to the same element in the languageTags array. | No | Array of String |
