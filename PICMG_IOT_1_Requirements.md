@@ -1,23 +1,21 @@
 # PICMG IOT.1 R1.00 - Requirements and Specification Tables
 
 **Source:** IIoT Firmware Specification (August 24, 2021)
-**Last Updated:** Automated extraction from PDF
+**Last Updated:** Reorganized with interleaved tables
 
 ---
 
-## Table of Contents
+## Requirements and Specification Tables
 
-1. [SHALL Requirements](#shall-requirements)
-2. [Specification Tables](#specification-tables)
+*Total: 301 requirements and 51 tables, interleaved by section*
 
----
+### Table 2: Parameters for Trapezoidal Motion Profile
 
-## SHALL Requirements
-
-*Total: 306 requirements extracted*
-
-
-### Section 4
+| Parameter Name | Description | Typical Units |
+|---|---|---|
+| Aprofile | The acceleration of the motor in the acceleration phase of the trapezoidal motion profile. For s-curve motion, this parameter is the average acceleration reached in the acceleration phase. | rad/sec2 |
+| Vprofile | The velocity of the motor in the constant-velocity region of the motion profile | rad/sec |
+| Pfinal | The final position of the motor after completion of the motion. | rad |
 
 **REQ 4.10**:  IIoT Endpoint shall implement an MCTP endpoint accessible through the point-topoint communications link.
 
@@ -103,13 +101,83 @@
 
 **REQ 4.420**:  The IIoT Endpoint shall not maintain state through a power-cycle. IIoT Endpoints, in general may not have the capability to detect loss of communication. During loss of communications, the IIoT Endpoint, should continue operating as normal. This means, that any commands in process will continue toward completion. If quiesced, the Endpoint will continue to await new commands. 4.3 Device Definitions Each IIoT PLDM terminus must provide a Device PDR repository describing an IIoT Node, its Sensors, Effecters, and optional FRU Inventory information associated with the containing physical device. There are several mandatory PDRs which IIoT Bridge/Aggregator device expects seeing in the Device PDR repository in order to correctly determine IIoT Node type. Table 3 illustrates contents of the Terminus Locator PDR for an IIoT Endpoint.
 
+### Table 3: Terminus Locator PDR
+| Offset | Length | Definition |
+|---|---|---|
+|0|4|Record Handle|
+|4|1|PDR Header Version. For all records defined in this specification avalue of 01h shall be used.|
+|5|1|PDR Type. For the Terminus Locator PDR, the value 01h is used.|
+|6|2|recordChangeNumber. Consult [DMTF-0248] for more information.|
+|8|2|dataLength – the total number of PDR bytes following this field.|
+|10|2|PLDM Terminus Handle. For this specification, the value 0001h is used.|
+|12|1|Validity. For this specification, the value 01h (valid) is used.|
+|13|1|TID. For this specification, the value 01h (unassigned) is used.|
+|14|2|Container ID. For this specification, the value 0001h is used.|
+|16|1|Terminus Locator Type.<br>00h = UID<br>01h = MCTP_EID <br> Other Terminus Locator Types are not used for this specification.|
+|17|2|Terminus Locator Value Size. Depends on Terminus Locator Type. <br>Use 0011h (17) for UID Terminus Locator Type. <br>Use 0001h (1) for MCTP_EID Terminus Locator Type.|
+|Terminus Locator Value for Terminus Locator Type = UID|
+|18|1|Terminus Instance.|
+|19|16|Device UID.|
+|Terminus Locator Value for Terminus Locator Type = MCTP_EID |
+|35|1|EID. For this specification, the value 01h (unassigned) is used.|
+
+### Table 4: Entity Association PDR
+
+| Offset | Length | Definition |
+|---|---|---|
+| 0 | 4 | Record Handle |
+| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
+| 5 | 1 | PDR Type. For the Entity Association PDR, the value 15h is used. |
+| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
+| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
+| 10 | 2 | Container ID. For this specification, the value 0001h is used. |
+| 12 | 1 | Association Type. For this specification, the value 01h (logicalContainment) is used. |
+| | | **Container Entity Identification Information** |
+| 13 | 2 | Container Entity Type. Defines type of the entity that the Endpoint terminus. |
+| 15 | 2 | Container Entity Instance Number. For this specification, the value 0001h is used. |
+| 17 | 2 | Container Entity Container ID. For this specification, the value 0000h (SYSTEM) is used. |
+| | | **Contained Entity Identification Information** |
+| 19 | 1 | Contained Entity Count. For this specification, the value 0001h is used. |
+| 20 | 2 | Contained Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
+| 22 | 2 | Contained Entity Instance Number. For this specification, the value 0001h is used. |
+| 24 | 2 | Contained Entity Container ID. For this specification, the value 0001h is used. |
+
+### Table 5: OEM EntityID PDR
+
+| Offset | Length | Definition |
+|---|---|---|
+| 0 | 4 | Record Handle |
+| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
+| 5 | 1 | PDR Type. For the OEM Entity PDR, the value 15h is used. |
+| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
+| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
+| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
+| 12 | 2 | OEM Entity ID Handle. For this specification, the value 6000h is used. |
+| 14 | 4 | Vendor IANA. For this specification, the value 12634 is used. |
+| 18 | 2 | Vendor Entity ID.<br>0001h = Simple Sensor/Effecter<br>0002h = PID control<br>0003h = Profiled Motion control<br>Other values are not used for this specification. |
+| 20 | 1 | String Count. For this specification, the value 01h is used. |
+| 21 | 3 | Entity ID Language. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 24 | Variable | Entity ID Name. A null-terminated Unicode string in UTF-16BE<br>format.<br>“Simple” for Vendor Entity ID = 0001h.<br>“PID” for Vendor Entity ID = 0002h.<br>“Profiled” for Vendor Entity ID = 0003h. |
+
+### Table 6: FRU Record Set PDR
+
+| Offset | Length | Definition |
+|---|---|---|
+| 0 | 4 | Record Handle |
+| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
+| 5 | 1 | PDR Type. For the Entity Association PDR, the value 20h is used. |
+| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
+| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
+| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
+| 12 | 2 | FRU Record Set Identifier. For this specification, the value 0001h is used. |
+| 14 | 2 | Entity Type. For this specification, the value must match the Container Entity Type value in the Entity Association PDR. See Table 4. |
+| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
+
 **REQ 4.430**:  Each PLDM terminus shall provide Device PDR repository.
 
 **REQ 4.440**:  Table 3. The Device PDR repository shall contain a Terminus Locator PDR as depicted in
 
 **REQ 4.450**:  Table 4. The Device PDR repository shall contain an Entity Association PDR as depicted in
-
-
 
 **REQ 4.480**: Each Sensor-related and Effecter-related PDR in the Device PDR Repository shall have PLDMTerminusHandle field equal to 1.
 
@@ -119,12 +187,51 @@
 
 **REQ 4.510**:  Each Sensor-related or Effecter-related PDR shall have containerID field equal to 1. 4.3.1 Global Interlock Several IIoT Endpoint types implement a Global Interlock. IIoT Endpoint firmware must follow the requirements below if it implements the Global Interlock. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 39
 
-
-
 **REQ 4.540**:  in Table 9. The Device PDR repository shall contain a State Sensor PDR for Trigger as depicted
+
+### Table 9: Trigger State Sensor PDR
+
+| Offset | Length | Definition |
+|---|---|---|
+| 0 | 4 | Record Handle |
+| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. Offset Length |
+| 5 | 1 | PDR Type. For the State Sensor PDR, the value 04h is used. |
+| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
+| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
+| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
+| 12 | 2 | Sensor ID. For this specification, the value 0002h is used. |
+| 14 | 2 | Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
+| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
+| 18 | 2 | Container ID. For this specification, the value 0001h is used. |
+| 20 | 1 | Sensor Init. For this specification, the value 00h (noInit) is used. |
+| 21 | 1 | Sensor Auxiliary Names PDR. |
+| 22 | 1 | Composite Sensor Count. For this specification, the value 01h is used. Sensor Possible States |
+| 23 | 2 | State Set ID. This is a unique value in the OEM state set range such that it references a Trigger OEM State Set PDR. |
+| 25 | 1 | Possible State Size. For this specification, the value 01h is used. |
+| 26 | 1 | Possible States. For this specification, the value 03h is used. in Table 10. The Device PDR repository shall contain a State Effecter PDR for Trigger as depicted |
 
 **REQ 4.550**:  in Table 10. The Device PDR repository shall contain a State Effecter PDR for Trigger as depicted
 
+### Table 10: Trigger State Effecter PDR
+
+| Offset | Length | Definition |
+|---|---|---|
+| 0 | 4 | Record Handle |
+| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
+| 5 | 1 | PDR Type. For the State Effecter PDR, the value 0Bh is used. |
+| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
+| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
+| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
+| 12 | 2 | Effecter ID. For this specification, the value 0002h is used. Offset Length |
+| 14 | 2 | Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
+| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
+| 18 | 2 | Container ID. For this specification, the value 0001h is used. |
+| 20 | 2 | Effecter Semantic ID. For this specification, the value 0000h (unspecified) is used. |
+| 22 | 1 | Effecter Init. For this specification, the value 00h (noInit) is used. |
+| 23 | 1 | Effecter Description PDR. |
+| 24 | 1 | Composite Effecter Count. For this specification, the value 01h is used. Effecter Possible States |
+| 25 | 2 | State Set ID. This is a unique value in the OEM state set range such that it references a Trigger OEM State Set PDR. |
+| 27 | 1 | Possible State Size. For this specification, the value 01h is used. |
 
 **REQ 4.570**:  Sensor readings shall be linearized by the IIoT Node firmware.
 
@@ -140,11 +247,34 @@
 
 **REQ 4.630**:  The following Sensor IDs shall be reserved for specific Sensors (if present):
 
+### Table 12: Sensor IDs
+
+| ID | Sensor Description|
+|---|---|
+| 1 | Global Interlock state Sensor|
+| 2 | Trigger state Sensor |
+
 **REQ 4.640**:  The following Effecter IDs shall be reserved for specific Effecters (if present):
+
+### Table 13: Effecter IDs
+
+|ID|Effecter Description|
+|---|---|
+|1|Global Interlock state Effecter|
+|2|Trigger state Effecter|
 
 **REQ 4.650**:  Effecters that can control physical devices should be disabled during start-up. NOTE: The intent is that outputs are placed in a “safe” state until configured for operation. NOTE: The “safe” state for a given Effecter may depend on its operating context but will, in general, be a condition in which 1) no additional energy is added to the Effecter; and 2) the Effecter is allowed to passively dissipate any kinetic and/or thermal energy it already has, without active intervention by the Endpoint Controller. It is ultimately the responsibility of the system designer/integrator to determine what is “safe” for a given application. 4.3.4.6 Configuration Parameters This section contains requirements on configuration parameters for the Simple Sensor/Effecter Endpoint. The configuration mechanism is described in detail in section 5 of this document (Configuration).
 
 **REQ 4.660**:  PID Endpoint shall support the following configuration parameters:
+
+### Table 14: PID Endpoint Configuration Parameters
+
+|Configuration Parameter Name |Description |Type|
+|---|---|---|
+|GlobalInterlockEffecter | A structure that defines the binding between the global interlock Effecter and specific device pin(s). For more information on I/O bindings, consult section 5 of this specification.|I/O Binding|
+|GlobalInterlockSensor|A structure that defines the binding between the global interlock Sensor and specific device pin(s). For more information on I/O bindings, consult section 5 of this specification.|I/O Binding|
+|TriggerEffecter|A structure that defines the binding between the I/O Binding trigger Effecter and specific device pin(s). For more information on I/O bindings, consult section 5 of this specification. | I/O Binding |
+|TriggerSensor|A structure that defines the binding between the trigger Sensor and specific device pin(s). For more information on I/O bindings, consult section 5 of this specification.|I/O Binding|
 
 **REQ 4.670**: The Simple Sensor/Effecter model shall support additional I/O bindings for each Sensor/Effecter supported by the IIoT Node.
 
@@ -160,15 +290,138 @@
 
 **REQ 4.730**: The PID controller Endpoint shall include an OEM State Set PDR for the PICMG OEM PID Controller State Set as described in Table 15. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 47
 
+### Table 15: PID Controller OEM State Set PDR
+
+| Offset | Length | Definition |
+|---|---|---|
+| 0 | 4 | Record Handle |
+| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
+| 5 | 1 | PDR Type. For the OEM State Set PDR, the value 08h is used. |
+| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
+| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
+| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
+| 12 | 2 | OEM State Set ID Handle. A unique value in the OEM state set range. |
+| 14 | 4 | Vendor IANA. For this specification, the value 12634 is used. |
+| 18 | 2 | OEM State Set ID. For this specification, the value 0002h is used. |
+| 20 | 1 | Unspecified Value Hint. For this specification, the value 01h (treatAsError) is used. |
+| 21 | 2 | State Count. For this specification, the value 04h is used. OEM State Value Record |
+| 23 | 1 | Min State Value. For this specification, the value 01h is used. |
+| 24 | 1 | Max State Value. For this specification, the value 01h is used. |
+| 25 | 1 | String Count. For this specification, the value 01h is used. |
+| 26 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 29 | 10 | State Name. A null-terminated Unicode string “Idle” in UTF-16BE format. OEM State Value Record |
+| 39 | 1 | Min State Value. For this specification, the value 02h is used. |
+| 40 | 1 | Max State Value. For this specification, the value 02h is used. |
+| 41 | 1 | String Count. For this specification, the value 01h is used. |
+| 42 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 45 | 30 | State Name. A null-terminated Unicode string “ConditionStop” in UTF-16BE format. OEM State Value Record |
+| 75 | 1 | Min State Value. For this specification, the value 03h is used. Offset Length |
+| 76 | 1 | Max State Value. For this specification, the value 03h is used. |
+| 77 | 1 | String Count. For this specification, the value 01h is used. |
+| 78 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 81 | 20 | State Name. A null-terminated Unicode string “ErrorStop” in UTF-16BE format. OEM State Value Record |
+| 101 | 1 | Min State Value. For this specification, the value 04h is used. |
+| 102 | 1 | Max State Value. For this specification, the value 04h is used. |
+| 103 | 1 | String Count. For this specification, the value 01h is used. |
+| 104 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 107 | 16 | State Name. A null-terminated Unicode string “Running” in UTF-16BE format. PID Controller Command State Set as described in Table 16. |
+
 **REQ 4.740**: The PID controller Endpoint shall include an OEM Sate Set PDR for the PICMG OEM PID Controller Command State Set as described in Table 16.
+
+### Table 16: PID Controller Command OEM State Set PDR
+
+| Offset | Length | Definition |
+|---|---|---|
+| 0 | 4 | Record Handle |
+| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
+| 5 | 1 | PDR Type. For the OEM State Set PDR, the value 08h is used. |
+| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
+| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
+| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
+| 12 | 2 | OEM State Set ID Handle. A unique value in the OEM state set range. |
+| 14 | 4 | Vendor IANA. For this specification, the value 12634 is used. |
+| 18 | 2 | OEM State Set ID. For this specification, the value 0003h is used. |
+| 20 | 1 | Unspecified Value Hint. For this specification, the value 01h (treatAsError) is used. |
+| 21 | 2 | State Count. For this specification, the value 02h is used. OEM State Value Record Offset Length |
+| 23 | 1 | Min State Value. For this specification, the value 01h is used. |
+| 24 | 1 | Max State Value. For this specification, the value 01h is used. |
+| 25 | 1 | String Count. For this specification, the value 01h is used. |
+| 26 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 29 | 12 | State Name. A null-terminated Unicode string “Start” in UTF-16BE format. OEM State Value Record |
+| 41 | 1 | Min State Value. For this specification, the value 02h is used. |
+| 42 | 1 | Max State Value. For this specification, the value 02h is used. |
+| 43 | 1 | String Count. For this specification, the value 01h is used. |
+| 44 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 47 | 10 | State Name. A null-terminated Unicode string “Stop” in UTF-16BE format. PID Controller State as described in Table 17. |
 
 **REQ 4.750**: The PID controller Endpoint shall include a State Sensor PDR for the PICMG OEM PID Controller State as described in Table 17.
 
+### Table 17: PID Controller State Sensor PDR
+
+| Offset | Length | Definition |
+|---|---|---|
+| 0 | 4 | Record Handle |
+| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
+| 5 | 1 | PDR Type. For the State Sensor PDR, the value 04h is used. |
+| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
+| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
+| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
+| 12 | 2 | Sensor ID. For this specification, the value 0003h is used. |
+| 14 | 2 | Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
+| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
+| 18 | 2 | Container ID. For this specification, the value 0001h is used. |
+| 20 | 1 | Sensor Init. For this specification, the value 00h (noInit) is used. Offset Length |
+| 21 | 1 | Sensor Auxiliary Names PDR. |
+| 22 | 1 | Composite Sensor Count. For this specification, the value 01h is used. Sensor Possible States |
+| 23 | 2 | State Set ID. A value that references a PID Controller Operational State Set OEM State Set PDR. |
+| 25 | 1 | Possible State Size. For this specification, the value 01h is used. |
+| 26 | 1 | Possible States. For this specification, the value 0Fh is used. PID Controller Command Effecter as described in Table 18. |
+
 **REQ 4.760**: The PID controller Endpoint shall include a State Effecter PDR for the PICMG OEM PID Controller Command Effecter as described in Table 18.
+
+### Table 18: PID Controller Command Effecter PDR
+
+| Offset | Length | Definition |
+|---|---|---|
+| 0 | 4 | Record Handle |
+| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
+| 5 | 1 | PDR Type. For the State Effecter PDR, the value 0Bh is used. |
+| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
+| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
+| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
+| 12 | 2 | Effecter ID. For this specification, the value 0003h is used. |
+| 14 | 2 | Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
+| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
+| 18 | 2 | Container ID. For this specification, the value 0001h is used. |
+| 20 | 2 | Effecter Semantic ID. For this specification, the value 0000h (unspecified) is used. |
+| 22 | 1 | Effecter Init. For this specification, the value 00h (noInit) is used. |
+| 23 | 1 | Effecter Description PDR. |
+| 24 | 1 | Composite Effecter Count. For this specification, the value 01h is used. Effecter Possible States Offset Length |
+| 25 | 2 | State Set ID. A value that references a PID Controller Command OEM State Set PDR. |
+| 27 | 1 | Possible State Size. For this specification, the value 01h is used. |
+| 28 | 1 | Possible States. For this specification, the value 03h is used. NOTE: Other PDRs may be present within the PID Controller Endpoint so long as they do not prevent meeting the stated requirements. |
 
 **REQ 4.770**: The PICMG PID Controller OEM Entity ID PDR shall have an entity id of 2, indicating a PID Controller Endpoint. 4.3.5.3 Behavior The PID Controller Endpoint supports two different operational states: Running, and Idle. In addition, there are two potential “error” condition states. The relationship between these states is shown below. Figure 12: PID Controller State-Machine Upon start-up, the PID controller is in the IDLE state. It remains in this state until the PID Command state Effecter is set to Start. In this state, the control loop should be effectively disabled, and the control output should be placed into a “safe” state; see notes on “safe” states in section 4.3.4.5. In the Running state, the PID loop is operational and the control output exerts change on the controlled item to reach and maintain the feedback at the setpoint value. The running state can be exited by sending a Stop command to the PID Command state Effecter. While running, if a special condition or error occurs, the state machine will transition to ConditionStop or ErrorStop respectively. Special conditions that cause a transition to ConditionStop are the error or feedback Sensors having values beyond the “critical” limit, as defined by PLDM Sensor thresholds, or the trigger Sensor becoming active. A global interlock signal or Sensor readings beyond the fatal limit will cause a transition to the ErrorStop state.
 
 **REQ 4.780**: The PICMG OEM PID Controller operational state shall implement state transitions as show in the following table: PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 52
+
+### Table 19: PID Controller State Transitions
+
+|State|Event|Next State|
+|---|---|---|
+|Idle|Command: Start|Running|
+|Running|Command: Stop|Idle|
+||Error Sensor over critical threshold|ConditionStop|
+||Feedback Sensor over critical threshold|ConditionStop|
+||Trigger Sensor is active|ConditionStop|
+||Error Sensor over fatal threshold|ErrorStop|
+||Feedback Sensor over fatal threshold|ErrorStop|
+||Global interlock Sensor is active|ErrorStop|
+|ComnditionStop|Command: Stop|Idle|
+||Error Sensor over fatal threshold|ErrorStop|
+||Feedback Sensor over fatal threshold|ErrorStop|
+||Global interlock Sensor is active|ErrorStop|
+|ErrorStop|Command: Stop|Idle|
 
 **REQ 4.790**: Events that could cause transitions to ErrorStop shall be given precedence over all other conditions.
 
@@ -189,6 +442,16 @@
 **REQ 4.870**: The OperationalState Sensor shall return the state of the PID controller state machine as represented by a PID Controller Operational State Set value.
 
 **REQ 4.880**:  The following Sensor IDs shall be reserved for specific Sensors (if present):
+
+### Table 20: PID Controller Sensor IDs
+
+|ID|Sensor Description|
+|---|---|
+|1|Global Interlock state Sensor|
+|2|Trigger state Sensor|
+|3|PID OperationalState Sensor|
+|4|PID Control Error numeric Sensor|
+|5|Feedback numeric Sensor|
 
 **REQ 4.890**:  ID Sensor Description 1 Global Interlock state Sensor 2 Trigger state Sensor 3 PID OperationalState Sensor 4 PID Control Error numeric Sensor 5 Feedback numeric Sensor Sensor PDRs shall be associated with the PICMG PID Controller Entity. 4.3.5.5 Effecters The PICMG PID Controller has several required Effecters. The following requirements apply.
 
@@ -216,9 +479,44 @@
 
 **REQ 4.1010**: The following Effecter IDs shall be reserved for specific Effecters (if present)
 
+### Table 21: PID Controller Effecter IDs
+
+|ID|Effecter Description|
+|---|---|
+|1|Global Interlock state Effecter|
+|2|Trigger state Effecter|
+|3|Command Effecter|
+|4|Setpoint numeric Effecter|
+|5|Proportional gain numeric Effecter|
+|6|Integral gain numeric Effecter|
+|7|Differential gain numeric Effecter|
+
 **REQ 4.1020**: PID Controller Endpoint shall support the following configuration IOBinding objects:
 
+### Table 22: PID Controller IOBindings
+
+|IOBinding Name|Description|I/O Binding Type|“virtual” Field Value|“required” Field Value|Include in PDR|
+|---|---|---|---|---|---|
+|GlobalInterlockEffecter|Global interlock Effecter|State Effecter|false|true|true|
+|GlobalInterlockSensor|Global interlock Sensor|State Sensor|false|true|true|
+|TriggerEffecter|Trigger Effecter|State Effecter|false|true|true|
+|TriggerSensor|Trigger Effecter|State Sensor|false|true|true|
+|Feedback|The PID feedback Sensor|Numeric Effecter|false|true|false|
+|OutputEffecter|the PID output Effecter|Numeric Effecter|false|true|false|
+|Command|The command Effecter|State Effecter|true|true|true|
+|OperationalState|The operational state Sensor|State Sensor|true|true|true|
+|ProportionalGain|The proportional gain Effecter|Numeric Effecter|true|true|true|
+|IntegralGain|The integral gain Effecter|Numeric Effecter|true|true|true|
+|Setpoint|The PID setpoint Effecter|Numeric Effecter|true|true|true|
+|Error|The position error virtual Sensor|Numeric Sensor|true|false|true|
+
 **REQ 4.1030**: PID Endpoint shall support the following configuration requirements:
+
+### Table 23: PID Controller Configurations
+
+|Configuration Parameter Name|Description|Type|
+|---|---|---|
+|SampleRate|The sample rate of the PID controller expressed in Hertz. The sample rate controls the rate at which the feedback signal is sampled and the output signal is updated.|Type|
 
 **REQ 4.1040**: The Profiled Motion controller Endpoint shall include an OEM Entity ID PDR for a PICMG Profiled Motion Controller OEM Entity.
 
@@ -228,11 +526,136 @@
 
 **REQ 4.1070**: The Profiled Motion controller Endpoint shall include an OEM State Set PDR for the PICMG OEM Profiled Motion Controller State Set as described in Table 24.
 
+### Table 24: Profiled Motion Controller OEM State Set PDR
+
+| Offset | Length | Definition |
+|---|---|---|
+| 0 | 4 | Record Handle |
+| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
+| 5 | 1 | PDR Type. For the OEM State Set PDR, the value 08h is used. |
+| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
+| 8 | 2 | dataLength – the total number of PDR bytes following this field. Offset Length |
+| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
+| 12 | 2 | OEM State Set ID Handle. A unique value in the OEM state set range. |
+| 14 | 4 | Vendor IANA. For this specification, the value 12634 is used. |
+| 18 | 2 | OEM State Set ID. For this specification, the value 0004h is used. |
+| 20 | 1 | Unspecified Value Hint. For this specification, the value 01h (treatAsError) is used. |
+| 21 | 2 | State Count. For this specification, the value 07h is used. OEM State Value Record |
+| 23 | 1 | Min State Value. For this specification, the value 01h is used. |
+| 24 | 1 | Max State Value. For this specification, the value 01h is used. |
+| 25 | 1 | String Count. For this specification, the value 01h is used. |
+| 26 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 29 | 10 | State Name. A null-terminated Unicode string “Idle” in UTF-16BE format. OEM State Value Record |
+| 39 | 1 | Min State Value. For this specification, the value 02h is used. |
+| 40 | 1 | Max State Value. For this specification, the value 02h is used. |
+| 41 | 1 | String Count. For this specification, the value 01h is used. |
+| 42 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 45 | 30 | State Name. A null-terminated Unicode string “ConditionStop” in UTF-16BE format. OEM State Value Record |
+| 75 | 1 | Min State Value. For this specification, the value 03h is used. |
+| 76 | 1 | Max State Value. For this specification, the value 03h is used. |
+| 77 | 1 | String Count. For this specification, the value 01h is used. |
+| 78 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 81 | 20 | State Name. A null-terminated Unicode string “ErrorStop” in UTF-16BE format. OEM State Value Record |
+| 101 | 1 | Min State Value. For this specification, the value 04h is used. Offset Length |
+| 102 | 1 | Max State Value. For this specification, the value 04h is used. |
+| 103 | 1 | String Count. For this specification, the value 01h is used. |
+| 104 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 107 | 16 | State Name. A null-terminated Unicode string “RunningV” in UTF-16BE format. OEM State Value Record |
+| 123 | 1 | Min State Value. For this specification, the value 05h is used. |
+| 124 | 1 | Max State Value. For this specification, the value 05h is used. |
+| 125 | 1 | String Count. For this specification, the value 01h is used. |
+| 126 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 129 | 18 | State Name. A null-terminated Unicode string “RunningP” in UTF-16BE format. OEM State Value Record |
+| 147 | 1 | Min State Value. For this specification, the value 06h is used. |
+| 148 | 1 | Max State Value. For this specification, the value 06h is used. |
+| 149 | 1 | String Count. For this specification, the value 01h is used. |
+| 150 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 159 | 16 | State Name. A null-terminated Unicode string “Waiting” in UTF-16BE format. OEM State Value Record |
+| 169 | 1 | Min State Value. For this specification, the value 07h is used. |
+| 170 | 1 | Max State Value. For this specification, the value 07h is used. |
+| 171 | 1 | String Count. For this specification, the value 01h is used. |
+| 172 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 175 | 10 | State Name. A null-terminated Unicode string “Done” in UTF-16BE format. |
+
 **REQ 4.1080**: The Profiled Motion controller Endpoint shall include an OEM Sate Set PDR for the PICMG OEM Profiled Motion Controller Command State Set as described in Table 25. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 61
+
+### Table 25: Profiled Motion Controller Command OEM State Set PDR
+
+| Offset | Length | Definition |
+|---|---|---|
+| 0 | 4 | Record Handle |
+| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
+| 5 | 1 | PDR Type. For the OEM State Set PDR, the value 08h is used. |
+| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
+| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
+| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
+| 12 | 2 | OEM State Set ID Handle. A unique value in the OEM state set range. |
+| 14 | 4 | Vendor IANA. For this specification, the value 12634 is used. |
+| 18 | 2 | OEM State Set ID. For this specification, the value 0005h is used. |
+| 20 | 1 | Unspecified Value Hint. For this specification, the value 01h (treatAsError) is used. |
+| 21 | 2 | State Count. For this specification, the value 03h is used. OEM State Value Record |
+| 23 | 1 | Min State Value. For this specification, the value 01h is used. |
+| 24 | 1 | Max State Value. For this specification, the value 01h is used. |
+| 25 | 1 | String Count. For this specification, the value 01h is used. |
+| 26 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 29 | 12 | State Name. A null-terminated Unicode string “Start” in UTF-16BE format. OEM State Value Record |
+| 41 | 1 | Min State Value. For this specification, the value 02h is used. |
+| 42 | 1 | Max State Value. For this specification, the value 02h is used. |
+| 43 | 1 | String Count. For this specification, the value 01h is used. |
+| 44 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 47 | 10 | State Name. A null-terminated Unicode string “Stop” in UTF-16BE format. OEM State Value Record |
+| 57 | 1 | Min State Value. For this specification, the value 03h is used. |
+| 58 | 1 | Max State Value. For this specification, the value 03h is used. Offset Length |
+| 59 | 1 | String Count. For this specification, the value 01h is used. |
+| 60 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
+| 63 | 12 | State Name. A null-terminated Unicode string “Wait” in UTF-16BE format. |
 
 **REQ 4.1090**: The Profiled Motion controller Endpoint shall include a State Sensor PDR for the PICMG OEM Profiled Motion Controller State Sensor as described in Table 26.
 
+### Table 26: Profiled Motion Controller State Sensor PDR
+
+| Offset | Length | Definition |
+|---|---|---|
+| 0 | 4 | Record Handle |
+| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
+| 5 | 1 | PDR Type. For the State Sensor PDR, the value 04h is used. |
+| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
+| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
+| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
+| 12 | 2 | Sensor ID. For this specification, the value 0003h is used. |
+| 14 | 2 | Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
+| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
+| 18 | 2 | Container ID. For this specification, the value 0001h is used. |
+| 20 | 1 | Sensor Init. For this specification, the value 00h (noInit) is used. |
+| 21 | 1 | Sensor Auxiliary Names PDR. |
+| 22 | 1 | Composite Sensor Count. For this specification, the value 01h is used. Sensor Possible States |
+| 23 | 2 | State Set ID. A value that references a Profiled Motion Controller OEM State Set PDR. |
+| 25 | 1 | Possible State Size. For this specification, the value 01h is used. |
+| 26 | 1 | Possible States. For this specification, the value 7Fh is used. Profiled Motion Controller Command Effecter as described in Table 27. |
+
 **REQ 4.1100**: The PID controller Endpoint shall include a State Effecter PDR for the PICMG OEM Profiled Motion Controller Command Effecter as described in Table 27. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 63
+
+### Table 27: Profiled Motion Controller Command Effecter PDR
+
+| Offset | Length | Definition |
+|---|---|---|
+| 0 | 4 | Record Handle |
+| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
+| 5 | 1 | PDR Type. For the State Effecter PDR, the value 0Bh is used. |
+| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
+| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
+| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
+| 12 | 2 | Effecter ID. For this specification, the value 0003h is used. |
+| 14 | 2 | Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
+| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
+| 18 | 2 | Container ID. For this specification, the value 0001h is used. |
+| 20 | 2 | Effecter Semantic ID. For this specification, the value 0000h (unspecified) is used. |
+| 22 | 1 | Effecter Init. For this specification, the value 00h (noInit) is used. |
+| 23 | 1 | Effecter Description PDR. |
+| 24 | 1 | Composite Effecter Count. For this specification, the value 01h is used. Effecter Possible States |
+| 25 | 2 | State Set ID. A value that references a Profiled Motion Controller Command OEM State Set PDR. |
+| 27 | 1 | Possible State Size. For this specification, the value 01h is used. |
+| 28 | 1 | Possible States. For this specification, the value 07h is used. NOTE: Other PDRs may be present within the Profiled Motion Controller Endpoint so long as they do not prevent meeting the stated requirements. |
 
 **REQ 4.1110**: The PICMG Profiled Motion Controller OEM Entity ID PDR shall have an entity id of 3, indicating a Profiled Motion Controller Endpoint. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 64 4.3.6.5 Behavior It is typical to use a profiled motion controller to move a motor from one position to another. However, there are cases that the same controller may also need to spin a motor at a constant speed with no specific final position. Both of these modes are supported by the Profiled Motion Controller and are described in the following sub-sections. 4.3.6.5.1 Profiled Position Moves Profiled position moves are moves in which the position, velocity and acceleration are specified. For these moves, there are four different normal operational states and two error states. These are: Idle, RunningP, Waiting, Done, ConditionStop and ErrorStop. The relationship between these states is shown below. Figure 15: Profiled Motion Controller State-Machine, Profiled Position Move Upon start-up, the Profiled Motion Controller is in the IDLE state. It remains in this state util the Command state Effecter is set to Start. In this state, the motion profile generator is inactive and the and the control output should be placed into a “safe” state; see notes on “safe” states in section 4.3.4.5. Depending upon the configuration parameters of the controller, the motor may coast, or may be held at the current position, or have the mechanical brake applied. In the RunningP (Running Position move) state, the profile generator and the control output exerts change to the motor’s position/velocity in an attempt to follow the motion profile. The RunningP state can be exited by sending a Stop command to the Command state Effecter. If a Stop command is received, the motor will transition to the Idle state, stopping its current motion. Alternately, if the motor reaches its final position, the controller will transition to the Done state automatically. The Done state indicates that the motor has reached the final position requested by the operator. In this state, the motor will either coast, hold its current position, or engage an external brake (as set by configuration parameter. The Done state may be exited by receiving a Stop command from the operator. When the motion controller is in the Idle state, the operator may initiate a synchronized by sending a Wait command to the controller. This will transition the controller to the Waiting state where it will wait for a trigger before beginning motion. In this way, multiple axes of motion can be synchronized to a single trigger signal. A negative-going edge on the Trigger Sensor will cause motion to begin and PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 65 transition the state machine to the RunningP state. While in the Waiting state, motion may also be aborted by sending the Stop command. If while running, a special condition or error occurs, the state machine will transition to ConditionStop or ErrorStop respectively. Special conditions that cause a transition to ConditionStop are the error or feedback Sensors having values beyond the “critical” limit, as defined by PLDM Sensor thresholds, or the trigger Sensor becoming active. Limit Sensors may also trigger a transition to ConditionStop if the direction of motion is the same as the limit Sensor. A global interlock signal or Sensor readings beyond the fatal limit will cause a transition to the ErrorStop state. 4.3.6.5.2 Profiled Velocity Moves Profiled velocity moves are moves in which the velocity and acceleration are specified. No final position is specified, so the motion continues at a constant velocity until the motion is stopped, or another velocity is specified. For these moves, there are three different normal operational states and two error states. These are: Idle, RunningV, Waiting, ConditionStop and ErrorStop. The relationship between these states is shown below. Figure 16: Profiled Motion Controller State-Machine, Profiled Position Move Upon start-up, the Profiled Motion Controller is in the IDLE state. It remains in this state util the Command state Effecter is set to Start. In this state, the motion profile generator is inactive and the and the control output should be placed into a “safe” state; see notes on “safe” states in section 4.3.4.5. Depending upon the configuration parameters of the controller, the motor may coast, or may be held at the current position, or have the mechanical brake applied. In the RunningV (Running Velocity motion) state, the profile generator and the control output exerts change to the motor’s position/velocity in an attempt to follow the motion profile, with no final position. The motor velocity will slew upward to the desired value and the controller will attempt to hold the velocity constant from that point onward. The RunningV state can be exited by sending a Stop command to the Command state Effecter. If a Stop command is received, the motor will transition to the Idle state, stopping its current motion. When the motion controller is in the Idle state, the operator may initiate a synchronized by sending a Wait command to the controller. This will transition the controller to the Waiting state where it will PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 66 wait for a trigger before beginning motion. In this way, multiple axes of motion can be synchronized to a single trigger signal. A negative-going edge on the Trigger Sensor will cause motion to begin and transition the state machine to the RunningV state. While in the Waiting state, motion may also be aborted by sending the Stop command. If while running, a special condition or error occurs, the state machine will transition to ConditionStop or ErrorStop respectively. Special conditions that cause a transition to ConditionStop are the error or feedback Sensors having values beyond the “critical” limit, as defined by PLDM Sensor thresholds, or the trigger Sensor becoming active. Limit Sensors may also trigger a transition to ConditionStop if the direction of motion is the same as the limit Sensor. A global interlock signal or Sensor readings beyond the fatal limit will cause a transition to the ErrorStop state. 4.3.6.5.3 Behavior Requirements This section describes the behavioral requirements for the Profiled Motion Controller.
 
@@ -253,6 +676,48 @@
 **REQ 4.1190**: If a Stop command is received by the controller when in the Running state for a profiled velocity move, the controller shall slew to zero velocity as specified the value of Aprofile set when the motion was begun.
 
 **REQ 4.1200**: The PICMG OEM Profiled Motion Controller operational state shall implement state transitions as shown in the following table:
+
+### Table 28: Profiled Motion Controller State Transitions
+
+|State|Event|Next State|
+|---|---|---|
+|Idle| Command: Start & Pfinal Effecter enabled|RunningP|
+||Command: Start & Pfinal Effecter disabled|RunningV|
+||Command: Wait|Waiting|
+|RunningP|Command: Stop|Idle|
+||Final Position Reached (profiled position motion only)|Done|
+||Command: Start (profiled velocity move only)|Running|
+||PositiveLimit Sensor (if it is enabled) is Pressed/On and motion is in the positive direction|ConditionStop|
+||NegativeLimit Sensor Condition (if it is enabled) is Pressed/On and motion is in the negative direction|Stop|
+||Perror or Verror Sensor over criticalthreshold|ConditionStop|
+||Position or Velocity Sensor over critical threshold|ConditionStop|
+||Trigger Sensor is active|ConditionStop|
+||Perror or Verror Sensor over fatal threshold|ErrorStop|
+||Position or Velocity Sensor over critical threshold|ErrorStop|
+||Feedback Sensor over fatal threshold|ErrorStop|
+||Global interlock Sensor is active|ErrorStop|
+|RunningV|Command: Stop|Idle|
+||Command: Start|RunningV, latching in new Vprofile and Aprofile|
+||PositiveLimit Sensor (if it is enabled) is Pressed/On and motion is in the positive direction|ConditionStop|
+||NegativeLimit Sensor (if it is enabled) is Pressed/On and motion is in the negative direction|ConditionStop|
+|Waiting|Perror or Verror Sensor over critical threshold|ConditionStop|
+||Position or Velocity Sensor over critical threshold|ConditionStop|
+||Trigger Sensor is active|ConditionStop|
+||Perror or Verror Sensor over fatal threshold|ErrorStop|
+||Position or Velocity Sensor over critical threshold|ErrorStop|
+||Feedback Sensor over fatal threshold|ErrorStop|
+||Global interlock Sensor is active|ErrorStop|
+||Trigger Sensor is positive edge|ConditionStop|
+||Trigger Sensor|negative edge & Pfinal was enabled at transition to Waiting state|RunningP|
+||Trigger Sensor negative edge & Pfinal was disabled at transition to Waiting state| RunningV |
+||Global interlock Sensor is active|ErrorStop|
+||Command: Stop|Idle|
+|Done|Command: Stop|Idle|
+|ConditionStop|Error Sensor over fatal threshold|ErrorStop|
+||Feedback Sensor over fatal threshold|ErrorStop|
+||Global interlock Sensor is active|ErrorStop|
+||Command: Stop|Idle|
+|ErrorStop|Command: Stop|Idle|
 
 **REQ 4.1210**: Events that could cause transitions to ErrorStop shall be given precedence over all other conditions.
 
@@ -285,6 +750,20 @@
 **REQ 4.1350**: The units of the Position Sensor (if present) shall be the same as the Pfinal Effecter. NOTE: The position Sensor is intended to return a real-time reading of the actual motor position.
 
 **REQ 4.1360**: The following Sensor IDs shall be reserved for specific Sensors (if present)
+
+### Table 29: Profiled Motion Controller Sensor IDs
+
+|ID|Sensor Description|
+|---|---|
+|1|Global Interlock state Sensor|
+|2|Trigger state Sensor|
+|3|MotionState state Sensor|
+|4|Verror numeric Sensor|
+|5|Perror numeric Sensor|
+|6|Velocity numeric Sensor|
+|7|Position numeric Sensor|
+|8|PositiveLimit state Sensor|
+|9|NegativeLimit state Sensor|
 
 **REQ 4.1370**: The Profiled Motion Controller shall implement a Global Interlock State Effecter.
 
@@ -328,11 +807,70 @@
 
 **REQ 4.1570**: The following Effecter IDs shall be reserved for specific Effecters (if present):
 
+### Table 30: Profiled Motion Controller Effecter IDs
+
+|ID|Effecter Description|
+|---|---|
+|1|Global Interlock state Effecter|
+|2|Trigger state Effecter|
+|3|Command Effecter|
+|4|Pfinal numeric Effecter|
+|5|Vprofile numeric Effecter|
+|6|Aprofile numeric Effecter|
+|7|AccelerationGain numeric Effecter|
+
 **REQ 4.1580**: Profiled Motion Controller Endpoint shall support the following configuration IOBinding objects:
+
+### Table 31: Profiled Motion Controller IOBindings
+
+|IOBinding Name|Description|I/O Binding Type|“virtual” Field Value|“required” Field Value|Include in PDR|
+|---|---|---|---|---|---|
+|GlobalInterlockEffecter|Global interlock Effecter|State Effecter|false|true|true|
+|GlobalInterlockSensor|Global interlock Sensor|State Sensor|false|true|true|
+|TriggerEffecter|Trigger Effecter|State Effecter|false|true|true|
+|TriggerSensor|Trigger Effecter |State Sensor|false|true|true|
+|PositionSensor|The positional feedback Sensor|Numeric Effecter|false|false (open loop), true (closed loop)|true| 
+|VelocitySensor|The virtual velocity feedback Sensor|Numeric Effecter|true|false|true|
+|PositiveLimit|the positive limit Sensor |State Sensor|false|false|true|
+|NegativeLimit|the negative limit Sensor|State Sensor|false |false|true|
+|OutputEffecter|the PIV output Effecter|Numeric Effecter|false|true|false|
+|OutputEnable|An effecter that enables the output Effecter|State Effecter|true|false|false|
+|BrakeEffecter|the brake Effecter|State Effecter|false|false|false|
+|Command|The command Effecter|State Effecter|true|true|true|
+|MotionState |The motion state Sensor|State Sensor|true|true|true|
+|AccelerationGain|The acceleration gain Effecter|Numeric Effecter|true|false|true|
+|Pfinal|The final position virtual Effecter|Numeric Effecter|true|true|true|
+|Vprofile|The profile velocity virtual Effecter|Numeric Effecter|true|true|true|
+|Aprofile|The profile acceleration virtual Effecter|Numeric Effecter|true|true|true|
+|Verror|The velocity error virtual Sensor|Numeric Sensor|true|false (open loop), true (closed loop)|true|
+|Perror|The position error virtual Sensor|Numeric Sensor|true|false (open loop), true (closed loop)|true|
 
 **REQ 4.1590**: Profiled Motion Controller Endpoint shall support the following configuration requirements:
 
+### Table 32: Profiled Motion Controller Configurations
+
+|Configuration Parameter Name|Description|Type|
+|---|---|---|
+|SampleRate|The sample rate of the Profiled Motion Controller expressed in Hertz. The sample rate controls the rate at which the profile is generated, feedback signals are sampled and the output signal is updated.|Numeric|
+|OutputInIdle|This parameter defines the behavior of the output while in the Idle state. Valid options are:<br>0: COAST – the output will be disabled<br>1: HOLD - the output will hold the current position<br>2: BRAKE – the brake will be engaged|Enumeration:|
+|OutputInConditionStop|This parameter defines the behavior of the output while in the ConditionStop state. Valid options are:<br>0: COAST – the output will be disabled<br>1: HOLD - the output will hold the current position<br>2: BRAKE – the brake will be engaged|Enumeration|
+|OutputInErrorStop|This parameter defines the behavior of the output while in the ErrorStop state. Valid options are:<br>0: COAST – the output will be disabled<br>1: HOLD - the output will hold the current position<br>2: BRAKE – the brake will be engaged|Enumeration|
+|DoneTimeConstant|The amount of time between when the profile generator reaches the final position and the controller state machine transitions to DONE. This parameter can be used to unsure that the motion has “settled” prior to signaling the completion of a move.|Numeric|
+|MotionProfile|This parameter defines the shape of the profiled move. Valid options are:<br>0: Trapezoid<br>1: S-Curve|Enumeration|
+
 **REQ 4.1600**: When configured for closed-loop operation, the Profiled Motion Controller Endpoint shall support the following additional configuration parameters:
+
+### Table 33: Profiled Motion Controller Closed-Loop Configurations
+
+|Configuration Parameter Name|Description|Type|
+|---|---|---|
+|PositionLoopLimit|A unitless constant that expresses the maximum/minimum value that will pass through the limiter in the position loop of the PIV controller (in device units).|Numeric|
+|PositionProportionalGain|A unitless constant that expresses the proportional gain in the position loop of the PIV controller.|Numeric|
+|VelocityProportionalGain A unitless constant that expresses the proportional gain in the velocity loop of the PIV controller.|Numeric|
+|VelocityIntegralGain|A unitless constant that expresses the integral gain in the velocity loop of the PIV controller.|Numeric|
+|VelocityDifferentialGain|A unitless constant that expresses the differential gain in the velocity loop of the PIV controller|Numeric|
+|VelocityFFGain|A unitless constant that expresses the feed forward gain for velocity.|Numeric|
+|OutputGain|A unitless constant that scales the output of the PIV controller|Numeric|
 
 **REQ 4.1610**: Other parameters may be present for device configuration. 4.4 Firmware Update Requirements As part of periodic maintenance, it may be necessary to update Endpoint firmware. For the typical IIoT installation, this update would not be performed with the equipment in the operational state, however, it may be convenient for the operator to leave the Endpoint in-place within the factory equipment while performing the updates. The exact mechanism of firmware update is not specified by this document.
 
@@ -343,15 +881,61 @@
 
 ### Section 5
 
+### Table 35: ControllerCapabilities object structure
+
+|Keyword|Description|Nullable| Data Type|
+|---|---|---|---|
+|device|The targeted hardware device for this build. This field can be used to direct the build process for the correct hardware platform.|No|String|
+|pins|An array of unique String names for I/O pins on the device.|No|Array of String|
+|channels|An array of channels supported by the device|No|Array of Channel objects|
+|maxFruBytes|The maximum number of bytes of FRU data the device can support.|No|Unsigned Integer|
+|fruRecords|An array of FRU record objects that are associated with the device’s physical entity|No|Array of fruRecord objects|
+|logicalEntities|An array of all possible logical entity objects supported by the device. The device does not need to support all logical entities at the same time.|No|Array of LogicalEntity objects|
+
 **REQ 5.10**:  The controller capabilities file shall consist of a single ControllerCapabilities object as defined defined in Table 35.
 
 **REQ 5.20**:  The controller capabilities file shall include at least one LogicalEntity object within the logicalEntities array.
 
 **REQ 5.30**:  Other fields may be present in the ControllerCapabilities object. 5.2.1 Channel objects Channels are a logical construct that relate an electrical interface with specific device pins. Example of simple channels might be a simple digital input. In this case, only a single device pin is required, and the channel represents the state of the pin as a binary value. Examples of more complex channels are digital counters, which count pulses received on the input pin, or the step and direction output channel to control a stepper motor. The general structure for Channel objects is as follows:
 
+### Table 36: Channel object structure
+
+|Keyword|Description|Nullable |Data Type|
+|---|---|---|---|
+|name|A unique name that identifies the channel from all other possible channels on the device.|No|String|
+|type|The type of physical interface this channel is associated. More on electrical interfaces can be found in section 5.2.1.1|No|String|
+|description|An optional description of the channel that may be helpful to the Sensor/Effecter integrator. If not used, this field may be null. It is recommended that this field be used to provide guidance around IOBinding input/output curves.|Yes|String|
+|maxValueAtPin|The maximum quantity that can be measured or output at the device pin. The units of this field varies by electrical interface type.<br>- analog interface types: A voltage in Volts<br>- pwm interface types: a duty cycle between 0 and 100<br>- rate interface types: A frequency in Hertz<br>- all other interface types – not used, set to 0|No|Numeric|
+|minValueAtPin|The minimum quantity that can be measured or output at the device pin. The units of this field varies by electrical interface type.<br>- analog interface types: A voltage in Volts<br>- pwm interface types: a duty cycle between 0 and 100<br>- rate interface types: A frequency in Hertz<br>- all other interface types – not used, set to 0|No|Numeric|
+|precision|The number of precision bits associated with this channel. For instance, a 10-bit analog to digital converter would have a value of 10. Negative values indicate that the internal representation of the channel is signed. A 10 bit analog to digital converter that has a signed output would have a value of -10. For digital_in/out, count, quadrature, and step_dir_enable interface types this field should be set to 0.|No|Integer|
+|accuracy|An error component that scales linearly with the magnitude of the reading, expressed as a percentage (1.0 = 1%). |No|Numeric|
+|pins|An array of PinUse objects associated with this channel. In many cases pins may be shared between multiple channels; however, channels that share pins cannot both be configured for use since pins may only serve one function at a time.|No|Array of PinUse objects|
+
 **REQ 5.40**:  Array of PinUse objects Channel objects shall consist of the JSON structure defined in Table 36. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 80
 
 **REQ 5.50**:  Table 37. Channel type strings shall consist of one of the electrical interface type names found in 5.2.1.1 Electrical Interface types Electrical interface types supported by this specification are described in table Table 37. Electrical interface names are included in each channel definition to relate the logical channel name to a specific electrical interface type. Electrical interfaces correspond to the electrical connection that the device supports on its connectors.
+
+### Table 37: Channel Electrical Interface Types
+
+|Electrical Interface Type Name|Description|
+|---|---|
+|digital_in|A digital input interface corresponding to a single device digital input pin.|
+|analog_in|An analog input interface corresponding to a single device analog input pin.|
+|count_in|A digital input interface associated with a single digital input pin. The controller counts positive edge transitions on this channel and keeps a running total of the transitions.|
+|rate_in|A digital input interface associated with a single digital input pin. The controller counts positive edge transitions on the channel over time and estimates the frequency of the edge transitions from this information. The sampled representation of this electrical type will be an estimate of the edge transitions per second (with possible scaling). |
+|quadrature_in|A digital input interface consisting of two pins: “A”, and “B”, that constitute a quadrature input signal. The controller keeps track of the absolute “position” based on transitions of the input signals relative to each other. Note that the quadrature input interface does not support an index (“Z”) input. Implementations require a index pulse can use a separate digital input channel for this purpose. The sampled representation of this electrical interface type will be the sum of pulses in the positive direction minus the sum of pulses in the negative direction (with possible scaling).|
+|analog_out|An analog output interface consisting of a single analog output pin pin that produces a voltage that is proportional to the controller’s internal representation of the value.|
+|digital_out|A digital output interface associated with a single digital output pin.
+|pwm_out||A digital output interface intended to be used for pulse-widthmodulation. The quantity produced at the output pin of the controller is a pulse with a varying duty cycle that is proportional to the controller’s internal representation of the value. This interface type is associated with a single pin.|
+|rate_out|A digital output interface that generates a pulse train with processorcontrolled output rate. This channel is associated with a single pin.|
+|step_dir_out|A digital output interface intended to control stepper motors. The interface consists of three pins. The first pin will send pulses to the motor to make it move one step. The second pin controls the direction of the motor. The third pin enables the motor driver. This interface type is always expected to be used in conjunction with a controller (PID, Profiled Motion Controller) logical entity. Control of stepper motors manually can be accomplished by combining rate_out and digital_out electrical interfaces.|
+
+### Table 38: PinUse object structure
+
+|Keyword |Description|Nullable |Data Type|
+|---|---|---|---|
+|name|The name of the pin – the pin name should match one found under the “pins” keyword of the controller capabilities.|No|String|
+|function|A description or name of the pin use when this channel is selected. This information may be useful when connecting physical devices to the controller.|No|String|
 
 **REQ 5.60**:  PinUse objects shall consist of the structure found in Table 38.
 
@@ -359,9 +943,29 @@
 
 **REQ 5.80**:  The value for the name field in the PinUse object shall match one of the strings found under the pins keyword of its associated ControllerCapabilities object. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 82 5.2.2 FruRecord objects The ControllerCapabilities object may contain a collection of fru records that must be present for all configured instances of the firmware. The general structure of each FruRecord object is shown in Table 39.
 
+### Table 39: FruRecord object structure
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| Type | vendorIANA The vendor IANA for the vendor that defined the fru record type. For IANA will be 12634, for general FRU records, the value should be 412 (DMTF) | No | Integer |
+| required | true if this entity must always be present in the device’s configuration. This must be set to true for FruRecords in the ControllerConfiguration | No | Boolean |
+| description | A text description of the fru record that may be useful to the sensor/effecter integerator. | Yes | String |
+| fields | An array of FruField objects that define each field in the FruRecord. | No | Array of |
+
 **REQ 5.90**:  Nullable Data Type No Integer required true if this entity must No always be present in the device’s configuration. This must be set to true for FruRecords in the ControllerConfiguration Boolean description A text description of the fru record that may be useful to the sensor/effecter integerator. Yes String fields An array of FruField objects that define each field in the FruRecord. No Array of FruField objects All FruRecord objects shall comply with the structure defined in Table 39.
 
 **REQ 5.100**: All FruRecord objects within the ControllerCapabilities object shall have the required field set to true. 5.2.2.1 FruField objects FruField objects are used to define the individual fields within the FruRecord object. FruField objects also contain metadata which may be helpful to guide the configuration process. The contents and definitions of each field type for general FRU fields are defined in DMTF-DSP0240. The contents and structure of OEM FRU fields are OEM-specific. This specification supports the definition of OEM FRU fields either through the use of general data formats, or collections of bytes. The structure of FruField objects is as follows: PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 83
+
+### Table 40:  FruField object structure
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| type | This metadata defines the numeric field type for this field. Field types are specified in DSP0257 | No | Integer |
+| required | true if this field must always be present in the device’s configuration. | No | Boolean |
+| description | A text description of the fru field that may Yes be useful to the sensor/effecter integrator. | Yes | String |
+| format | The data format for the field. Valid options include a subset of those defined in DSP0240 (“uint8”, “sint8”, “uint16”, “sint16”, “uint32”, “sint32”, “uint64”, “sint64”, “string”, “bool8”, “real32”, “real64”, “timestamp104”), and “bytes” which is represented by a jsonArray of unsigned 8-bit integers. | No | String |
+| length | The required length of byte-formatted fields. This field must be specified for fields with the format of “bytes”. For other types of fields it will be ignored and may be null. | Yes | Numeric or null |
+| value | The value of the field. | Yes | Dependent upon the format field of this object2. |
 
 **REQ 5.110**:  All FruField objects shall comply with the structure defined in Table 40.
 
@@ -375,11 +979,43 @@
 
 **REQ 5.160**: If specified, the number of bytes in the FruField objects value shall match the number specified by length. 5.2.3 LogicalEntity objects The collection of LogicalEntity objects found within the ConfigurationCapabilities object represents the set of all possible logical entities that may be instantiated within the device. It will be typical that PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 84 a given controller only instantiate one LogicalEntity; however, multiple entities are not precluded by the specification. Channel and pin usage between different LogicalEntities may preclude their simultaneous instantiation due to resource constraints (channels and pins may only be used once for a given device). ConfiguredLogical entities will be placed in the Configuration section of the config file. Logical entity information, once configured, can be used by the build process to create the PDR records for entities, Sensors, and Effecters. LogicalEntity objects consist of the following structure:
 
+### Table 41:  LogicalEntity object structure
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| entityVendorIANA | The vendor IANA for the vendor that defined the entity type. For PICMG, the vendor IANA will be 12634 | No | Integer |
+| vendorEntityID | The vendor entity id associated with this entity. | No | Integer |
+| name | A unique name that identifies this possible instance of the entity. For instance, “pid1” for the first possible instance of a pid controller instance. | No | String |
+| required | true if this entity must always be present in the device’s configuration. | No | Boolean |
+| description | A text description of the logical entity that Yes may be useful to the Sensor/Effecter integerator. | Yes | String |
+| ioBindings | An array of IOBinding objects that define how Sensors/Effecters for this LogicalEntity are bound to device channels. | No | Array of IOBinding objects |
+| parameters | An array of Parameter objects that define configuration parameter options for the LogicalEntity | No | Array of Parameter objects |
+
 **REQ 5.170**:  LogicalEntity objects shall consist of the structure found in Table 41.
 
 **REQ 5.180**: The value of the vendorIANA and vendorID fields within the LogicalEntity object shall match their corresponding fields in the desired OEM Entity ID PDR.
 
 **REQ 5.190**: The value for the name field in the LogicalEntity object shall be unique across all LogicalEntity objects. REQ If the value of the required field within the LogicalEntity object is true, the LogicalEntity shall be required be present in any resulting configuration of the device. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 85 5.2.4 IOBinding objects IOBinding objects represent the physical or logical binding of a Sensor/Effecter to the LogicalEntity. When configured, bindings contain all the necessary information to produce the required Sensor/Effecter PDRs as well as guidance to properly build the device firmware. Bindings within the ConfigurationCapabilities object will typically be incomplete – awaiting input from the Sensor/Effecter integrator to complete the configuration. The exception to this would be virtual Sensors/Effecters that require no binding to physical I/O channels and pins and are always present for a specific type of LogicalEntity. There are four variations of IOBinding objects, to support binding of state Sensors, state Effecters, numeric Sensors and numeric Effecters respectively. 5.2.4.1 State Sensor IOBinding The state Sensor IOBinding defines the binding for a state Sensor to the LogicalEntity. Its structure is shown in the following table:
+
+### Table 42:  IOBinding object structure for State Sensors
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| bindingType | A string that identifies the binding type as a state Sensor binding. | No | “stateSensor” |
+| name | A unique name that identifies this IOBinding from all other IOBinding objects within the LogicalEntity. For required I/O bindings, the name should match those found in sections of this document. | No | String |
+| includeInPdr | If value of this field is true, a corresponding PDR record should be generated in the firmware build process. If the value of this field is false, a PDR record will not be generated – this is useful in cases where binding of a function is required, but no direct interaction with the Sensor is allowed at runtime. | No | Boolean |
+| required | true if this I/O binding is required. False of the binding Sensor is optional for the specific LogicalEntity. | No | Boolean |
+| description | A text description of the function of the I/O binding that may be useful to the Sensor/Effecter integrator. | Yes | String |
+| isVirtual | The value of this field should be set to true if the I/O binding is virtual. Virtual Sensors will not be bound to physical I/O and will not be checked against I/O constraints when configured. | No | Boolean |
+| sensorID | The sensor ID for the sensor bound to this channel. This field may only be null if the sensor is not included in the PDR. | Yes | Integer |
+| allowedInterfaceTypes | An array of allowed electrical interface types that this binding can be configured to work with. See section 5.2.1.1 for possible values. For virtual Sensors this array should be blank. | No | Array of String |
+| boundChannel | The actual channel the Sensor is configured to use. The value of this field should be null for LogicalEntity objects in the ControllerCapabilities. When the device is configured, the value of this field will be changed to match a channel from the channels. IOBindings for virtual Sensors should always leave this value null. | Yes | String |
+| stateSetVendorIANA | The vendor id associated with the state set for this Sensor. If this field is nonnull in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| stateSet | The state set id for the state set used by this Sensor. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| usedStates | A bitfield that defines which states in the state set are used. Bit 0, corresponds to the first state in the set, bit-1, the second state and so forth. A bit value of 1 means the state is used, otherwise the state is not used. | No |  |
+| Bitfield | stateWhenHigh The state that will be returned when the binary state of the Sensor’s input pin (or virtual pin) is High. The value of this field should correspond to one of the states in the configured state set. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| stateWhenLow | The state that will be returned when the binary state of the Sensor’s input pin (or virtual pin) is Low. The value of this field should correspond to one of the states in the configured state set. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| possibleStates | A 32-bit bitfield where each bit specifies whether or not a specific state in the state set is used. A value of 1 in the bit specifies that the state is used, a value of 0 specifies that it is not. As an example, a value of 3 for this field means that states 0 and 1 are both used, all others are not. | No | Integer |
 
 **REQ 5.200**:  IOBinding objects for state Sensors shall consist of the structure found in Table 42.
 
@@ -389,6 +1025,26 @@
 
 **REQ 5.230**: The stateWhenLow field for IOBinding objects for virtual state sensors shall be ignored by the configuration process. NOTE: This field should be left null for virtual state sensors 5.2.4.2 State Effecter IOBinding The state Effecter IOBinding defines the binding for a state Effecter to the LogicalEntity. Its structure is shown in the following table:
 
+### Table 43:  IOBinding object structure for State Effecters
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| bindingType | A string that identifies the binding type as a state Effecter binding. | No | “stateEffecter” |
+| name | A unique name that identifies this IOBinding from all other IOBinding objects within the LogicalEntity. For required I/O bindings, the name should match those found in sections 4.3.5.6 and 4.3.6.8 of this document. | No | String |
+| includeInPdr | If value of this field is true, a corresponding No PDR record should be generated in the firmware build process. If the value of this field is false, a PDR record will not be generated – this is useful in cases where binding of a function is required, but no direct interaction with the Effecter is allowed at runtime. | No | Boolean |
+| required | true if this I/O binding is required. False of the binding is optional for the specific LogicalEntity. | No | Boolean |
+| description | A text description of the function of the I/O binding that may be useful to the Sensor/Effecter integrator. | Yes | String |
+| isVirtual | The value of this field should be set to true if the I/O binding is virtual. Virtual Effecters will not be bound to physical I/O and will not be checked against I/O constraints when configured. | No | Boolean |
+| effecterID | The effecter ID for the effecter bound to this channel. This field may only be null if the effecter is not included in the PDR. | Yes | Integer allowedInterfaceTypes An array of allowed physical interface types that this channel can be configured to work with. See section 5.2.1.1 for possible values. For virtual Effecters this array should be blank. |
+| No | Array of String boundChannel The actual channel the Effecter is configured Yes to use. The value of this field should be null for LogicalEntities in the ControllerCapabilities. When the device is configured, the value of this field will be changed to match a channel from the channels array. IOBindings for virtual Effecters should always leave this value null. | Yes | String |
+| stateSetVendorIANA | The vendor id associated with the state set for this Effecter. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| stateSet | The state set id for the state set used by this Effecter. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| usedStates | A bitfield that defines which states in the state set are used. Bit 0, corresponds to the first state in the set, bit-1, the second state and so forth. A bit value of 1 means the state is used, otherwise the state is not used. | No |  |
+| Bitfield | stateWhenHigh The state that, when set, will result in a binary High state of the Effecter’s output pin (or virtual pin). The value of this field should correspond to one of the states in the configured state set. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| stateWhenLow | The state that, when set, will result in a binary Low state of the Effecter’s output pin (or virtual pin). The value of this field should correspond to one of the states in the configured state set. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
+| possibleStates | A 32-bit bitfield where each bit specifies whether or not a specific state in the state set is used. A value of 1 in the bit specifies that the state is used, a value of 0 specifies that it is not. As an example, a value of 3 for this field means that states 0 and 1 are both used, all others are not. | No | Integer |
+| defaultState | The default state for the effecter when it is enabled. | Yes | Integer |
+
 **REQ 5.240**:  IOBinding objects for state Effecters shall consist of the structure found in Table 43. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 90
 
 **REQ 5.250**: The value of the bindingType field for IOBinding objects for state Effecters shall be “stateEffecter”.
@@ -396,6 +1052,38 @@
 **REQ 5.260**: The stateWhenHigh field for IOBinding objects for virtual state effecters shall be ignored by the configuration process. NOTE: This field should be left null for virtual state effecters
 
 **REQ 5.270**: The stateWhenLow field for IOBinding objects for virtual state effecters shall be ignored by the configuration process. NOTE: This field should be left null for virtual state effecters 5.2.4.3 Numeric Sensor IOBinding
+
+### Table 44:  IOBinding object structure for Numeric Sensors
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| bindingType | A string that identifies the binding type as a numeric Sensor binding. | No | “numericSensor” |
+| name | A unique name that identifies this IOBinding from all other IOBinding objects within the LogicalEntity. For required I/O bindings, the name should match those found in section sections 4.3.5.6 and 4.3.6.8 of this document. | No | String |
+| includeInPdr | If value of this field is true, a corresponding PDR record should be generated in the firmware build process. If the value of this field is false, a PDR record will not be generated – this is useful in cases where binding of a function is required, but no direct interaction with the Sensor is allowed at runtime. | No | Boolean |
+| required | True if this I/O binding is required. False if the binding Sensor is optional for the specific LogicalEntity. | No | Boolean |
+| description | A text description of the function of the I/O binding that may be useful to the Sensor/Effecter integrator. | Yes | String |
+| isVirtual | The value of this field should be set to true if the I/O binding is virtual. Virtual Sensors will not be bound to physical I/O and will not be checked against I/O constraints when configured. | No | Boolean |
+| sensorID | The sensor ID for the effecter bound to this channel. This field may only be null if the effecter is not included in the PDR. | Yes | Integer |
+| allowedInterfaceTypes | An array of allowed electrical interface types that this binding can be configured to work with. See section 5.2.1.1for possible values. For virtual Sensors this array should be blank. | No | Array of String |
+| sensor | A SensorDefinition object that defines the Sensor characteristics for the Sensor that is bound to this I/O function. It is intended that this field be null in the ControllerCapabilities structure. In the process of configuration it will be populated with a SensorDefintion. Virtual Sensors should leave this field null. | Yes | SensorDefinition object (null expected) |
+| inputCurve | An array of DataPoint objects that specify the input curve of the sampler input (see section 3.3.1). DataPoint objects are defined in section 5.2.4.5. <br>The input value for each point on the curve represent the input to the controller’s input circuitry. The output values represent the quantity present at the controller’s input pin. Physical meaning for the values at the input pin vary by interface type. They are: <br>- analog interface types: A voltage in Volts <br>- rate interface types: A frequency in Hertz <br>- count/quadrature interface types: a count of pulses | Yes | Array of at least two DataPoint objects |
+| boundChannel | The actual channel the Sensor is configured to use. The value of this field should be null for LogicalEntities in the ControllerCapabilities. When the device is configured, the value of this field will be changed to match a channel from the channels array. IOBindings for virtual Sensors should always leave this value null. | Yes | String |
+| inputGearingRatio | The gearing ratio expressed in terms of physical units to measured units expressed as a real number. The measured quantity will be the physical quantity divided by this amount. | Yes | Real |
+| physicalBaseUnit | The base units for the physical quantity measured by this I/O binding (or the virtual base units for virtual Sensors). The values for this field are defined identically to the baseUnit field in the PLDM specification. | Yes | Integer |
+| physicalUnitModifier | The unit modifier for the physical quantity measured by this I/O binding (or the virtual unit modifier for virtual Sensors). The value for this field is defined identically to the baseUnitModifier field in the PLDM specification. | Yes | Integer |
+| physicalRateUnit | The base unit modifier for the physical quantity measured by this I/O binding (or the virtual base unit modifier for virtual Sensors). The value for this field is defined identically to the baseUnitModifier field in the PLDM specification. | Yes | Integer |
+| physicalAuxUnit | The aux unit for the physical quantity measured by this I/O binding (or the virtual aux unit for virtual Sensors). The value for this field is defined identically to the auxUnit field in the PLDM specification. | Yes | Integer |
+| rel | The relationship between the base unit and the auxiliary unit, as follows: <br>value = { “dividedBy”, “multipliedBy”} <br>“dividedBy” implies a "/" or "per" relationship, such as "per foot" <br>“multipliedBy” implies a "*" operation, such as "foot*lbs (foot-lbs)" <br>This field definition is derived from an identically named field in PLDM Numeric Sensor / Effecter PDRs as defined by DSP0248. | Yes | String |
+| physicalAuxUnitModifier | The aux unit modifier for the physical quantity measured by this I/O binding (or the virtual aux unit modifier for virtual Sensors). The value for this field is defined identically to the auxUnitModifier field in the PLDM specification. | Yes | Integer |
+| physicalAuxRateUnit | The aux rate unit for the physical quantity measured by this I/O binding (or the virtual base unit modifier for virtual Sensors). The value for this field is defined identically to the auxRateUnit field in the PLDM specification. | Yes | Integer |
+| normalMax | The normalMax threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| normalMin | The normalMin threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| upperThresholdWarning | The upper warning threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| upperThresholdCritical | The upper critical threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| upperThresholdFatal | The upper fatal threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| lowerThresholdWarning | The lower warning threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| lowerThresholdCritical | The lower critical threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
+| lowerThresholdFatal | The lower fatal threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
 
 **REQ 5.280**:  IOBinding objects for numeric Sensors shall consist of the structure found in Table 44. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 95
 
@@ -425,6 +1113,31 @@
 
 **REQ 5.410**: The value of the physicalAuxRateUnit field in IOBindings in the ControllerCapabilities object shall be null for virtual Sensors. 5.2.4.4 Numeric Effecter IOBinding
 
+### Table 45:  IOBinding object structure for Numeric Effecters
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| bindingType | A string that identifies the binding type as a numeric Effecter binding. | No | “numericEffecter” |
+| name | A unique name that identifies this IOBinding from all other IOBinding objects within the LogicalEntity. For required I/O bindings, the name should match those found in section sections 4.3.5.6 and 4.3.6.8 of this document. | No | String |
+| includeInPdr | If value of this field is true, a corresponding PDR record should be generated in the firmware build process. If the value of this field is false, a PDR record will not be generated – this is useful in cases where binding of a function is required, but no direct interaction with the Effecter is allowed at runtime. | No | Boolean |
+| required | true if this I/O binding is required. False if the binding Effecter is optional for the specific LogicalEntity. | No | Boolean |
+| description | A text description of the function of the I/O binding that may be useful to the Sensor/Effecter integrator. | Yes | String |
+| isVirtual | The value of this field should be set to true if the I/O binding is virtual. Virtual Effecters will not be bound to physical I/O and will not be checked against I/O constraints when configured. | No | Boolean |
+| effecterID | The effecter ID for the effecter bound to this channel. This field may only be null if the effecter is not included in the PDR. | Yes | Integer |
+| allowedInterfaceTypes | An array of allowed electrical interface types that this channel can be configured to work with. See section 5.2.1.1 for possible values. For virtual Effecters this array should be blank. | No | Array of String |
+| effecter | An effecterDefinition object that defines the Effecter characteristics for the Effecter that is bound to this I/O function. It is intended that this field be null in the ControllerCapabilities structure. In the process of configuration it will be populated with an effecterDefinition. Virtual Effecters should leave this field null. | Yes | effecterDefinition object (null expected) |
+| outputCurve | An array of DataPoint objects that specify the output curve of the sampler output (see section 3.3.1). DataPoint objects are defined in section 5.2.4.5. <br>The input value for each point on the curve represent the output from the controller’s pin. The output values of this curve represent the quantity present at the exit of any external output circuitry. Physical meaning for the values at the output pin vary by interface type. They are: <br>- analog interface types: A voltage in Volts <br>- pwm interface types: a duty cycle between 0 and 100 <br>- rate interface types: A frequency in Hertz <br>- step_dir_enable – the number of steps to move. | Yes | Array of at least two DataPoint objects |
+| boundChannel | The actual channel the Effecter is configured to use. The value of this field should be null for LogicalEntity object in the ControllerCapabilities. When the device is configured, the value of this field will be changed to match a channel from the channels array. IOBindings for virtual Effecters should always leave this value null. | Yes | String |
+| outputGearingRatio | The gearing ratio expressed in terms of physical units to device output units expressed as a real number. The output quantity will be the physical quantity divided by this amount. | Yes | Real |
+| physicalBaseUnit | The base units for the physical quantity controlled by this I/O binding (or the virtual base units for virtual Effecters). The values for this field are defined identically to the baseUnit field in the PLDM specification. | Yes | Integer |
+| physicalUnitModifier | The unit modifier for the physical quantity controlled by this I/O binding (or the virtual unit modifier for virtual Effecters). The value for this field is defined identically to the baseUnitModifier field in the PLDM specification. | Yes | Integer |
+| physicalRateUnit | The base unit modifier for the physical quantity controlled by this I/O binding (or the virtual base unit modifier for virtual Effecters). The value for this field is defined identically to the baseUnitModifier field in the PLDM specification. | Yes | Integer |
+| physicalAuxUnit | The aux unit for the physical quantity controlled by this I/O binding (or the virtual aux unit for virtual Effecters). The value for this field is defined identically to the auxUnit field in the PLDM specification. | Yes | Integer |
+| rel | The relationship between the base unit and the auxiliary unit, as follows: <br>value = { “dividedBy”, “multipliedBy”} <br>“dividedBy” implies a "/" or "per" relationship, such as "per foot" <br>“multipliedBy” implies a "*" operation, such as "foot*lbs (footlbs)" <br>This field definition is derived from an identically named field in PLDM Numeric Sensor / Effecter PDRs as defined by DSP0248. | No | String |
+| physicalAuxUnitModifier | The aux unit modifier for the physical quantity controlled by this I/O binding (or the virtual aux unit modifier for virtual Effecters). The value for this field is defined identically to the auxUnitModifier field in the PLDM specification. | Yes | Integer |
+| physicalAuxRateUnit | The aux rate unit for the physical quantity controlled by this I/O binding (or the virtual base unit modifier for virtual Sensors). The value for this field is defined identically to the auxRateUnit field in the PLDM specification. | Yes | Integer |
+| physicalDefaultValue | The default value for the physical quantity controlled by this I/O binding when it is enabled. This value is specified in real-world units. | Yes | Real |
+
 **REQ 5.420**:  45. IOBinding objects for numeric Effecters shall consist of the structure found in Table
 
 **REQ 5.430**: The value of the bindingType field for IOBinding objects for numeric Effecters shall be “numericEffecter”.
@@ -453,6 +1166,13 @@
 
 **REQ 5.550**: The value of the physicalAuxRateUnit field in IOBindings in the ControllerCapabilites object shall null for virtual Effecters. 5.2.4.5 DataPoint objects Arrays of DataPoint objects are used by structures within this specification to describe the input to output characterization of IOBinding circuitry as well as sensor and effecter response curves. The structure of a single DataPoint object is simple, consisting of two numeric values, and input value, and the corresponding output. The structure is shown in Table 46.
 
+### Table 46:  DataPoint object structure
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| in | The input value | No | Real |
+| out | The resulting output value | No | Real |
+
 **REQ 5.560**:  DataPoint objects shall consist of the structure found in table Table 46. 5.2.4.6 Common IOBinding requirements The following requirements apply to all IOBinding types:
 
 **REQ 5.570**: The value for the name field in the IOBinding object shall be unique across all IOBinding objects within the LogicalEntity.
@@ -475,11 +1195,34 @@
 
 **REQ 5.660**: IOBinding fields that are non-null in LogicalEntity objects within the ControllerCapabilities object shall not be modified in the resulting device configuration. 5.2.5 Parameter Objects An array of Parameter objects is included in each LogicalEntity in order to allow for customization at the time of firmware configuration. Each Parameter object has a value that will be null until configured. It also contains metadata that enables the configuration tool to determine the type of data that is allowed, allowable values, and possible default value. The structure of the Parameter object varies by data type (format). These are defined in the following subsections. 5.2.5.1 Numeric Parameter Object Numeric Parameter objects are used to specify a numeric quantity. Their format is as follows:
 
+### Table 47:  Parameter object structure for Numeric parameters
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| parameterType | A string that identifies the parameter type as a numeric parameter. The value of this string should be “integer” for signed or unsigned integers or “real” for real-valued parameters. | No | String (“integer” or “real”) |
+| name | A unique name that identifies this Parameter from all other Parameter objects within the LogicalEntity. | No | String |
+| description | A text description of the parameter that may be useful to the sensor/effecter integrator. | Yes | String |
+| value | The value of the parameter. If null, the parameter must be set during the configuration process. If non-null, the value cannot be altered by the configuration process. by the parameter type | Yes | Numeric of the same type specified |
+| defaultValue | Provided as a hint to the configuration process. The default value of the parameter if no other value is specified. If null, the configuration process will not assume a default value. | Yes | Numeric of the same type specified by the parameter type |
+| maxValue | The maximum value allowed for this parameter. If null, the configuration process should not check for a maximum value. | Yes | Numeric of the same type specified by the parameter type |
+| minValue | The minimum value allowed for this parameter. If null, the configuration process should not check for a minimum value. | Yes | Numeric of the same type specified by the parameter type |
+
 **REQ 5.670**:  47. Parameter objects for numeric parameters shall consist of the structure found in Table
 
 **REQ 5.680**: If the value of the maxValue field in a numeric Parameter object is non-null the configuration process shall not allow setting numbers greater than the value of maxValue.
 
 **REQ 5.690**: If the value of the minValue field in a numeric Parameter object is non-null the configuration process should not allow setting numbers smaller than the value of minValue. 5.2.5.2 Enumerated Parameter Object Enumerated parameters are used to specify a choice from a list of values. Their format is as follows:
+
+### Table 48:  Parameter object structure for enumerated parameters
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| parameterType | A string that identifies the Parameter type as an enumerated parameter. | No | “enum” |
+| name | A unique name that identifies this Parameter from all other Parameter objects within the LogicalEntity. | No | String |
+| description | A text description of the parameter that may be useful to the sensor/effecter integrator. | Yes | String |
+| value | The value of the parameter. If null, the parameter must be set during the configuration process. If non-null, the value cannot be altered by the configuration process. | Yes | String |
+| defaultValue | Provided as a hint to the configuration process. The default value of the parameter if no other value is specified. If null, the configuration process will not assume a default value. | Yes | String |
+| choices | An array of strings where each element specifies a possible configuration choice. | Yes | Array of String |
 
 **REQ 5.700**:  Table 48. Parameter objects for enumerated parameters shall consist of the structure found in
 
@@ -489,13 +1232,66 @@
 
 **REQ 5.730**: If non-null, the value of an enumerated Parameter defaultValue field shall belong to the array of choices. 5.3 Numeric Sensor Json Each numeric sensor connected to the system should have a Sensor JSON file associated with it. The purpose of this file is to provide information to the configuration process regarding the sensor type, input characteristics and sensitivity. The content of this file can be provided by the sensor manufacturer, or in most cases, created from the devices’ data sheet. The structure of the file is shown in Table 49.
 
+### Table 49:  SensorDefinition JSON object structure
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| name | A human-readable name that identifies the sensor model. This should also be the file name (minus extension) of the sensor JSON file. | No | String |
+| manufacturer | The manufacturer of the sensor. | No | String |
+| partNumber | The manufacturer’s part number for the sensor. | No | String |
+| description | A text description of the sensor that may be helpful in understanding its capabilities. | No | String |
+| supportedInterfaces | An array of electrical interface types that this effecter can work with. The interface must match one of those found in section 5.2.1.1 | No | Array of String (cannot be empty) |
+| maxSampleRate | The maximum allowed sample rate of this sensor, expressed in Hz. If null, there is no maximum sample rate. | Yes | Number |
+| baseUnit | A numeric descriptor for the base units of the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
+| unitModifier | A numeric descriptor for the base unit modifier for the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
+| rateUnit | A numeric descriptor for the rate units of the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
+| auxUnit | A numeric descriptor for the aux units of the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
+| auxUnitModifier | A numeric descriptor for the aux unit modifier for the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
+| rel | The relationship between the base unit and the auxiliary unit, as follows: <br>value = { “dividedBy”, “multipliedBy”} <br>“dividedBy” implies a "/" or "per" relationship, such as "per foot" <br>“multipliedBy” implies a "*" operation, such as "foot*lbs (foot-lbs)" <br>This field definition is derived from an identically named field in PLDM Numeric Sensor / Effecter PDRs as defined by DSP0248. | No | String |
+| auxRateUnit | A numeric descriptor for the aux rate unit modifier for the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
+| plusAccuracy | The maximum amount the sensor may overreport the actual reading. This value should include all sources of inaccuracy including any loss of accuracy from the response curve inaccuracy. | No | Real |
+| minusAccuracy | The maximum amount the sensor may underreport the actual reading. This value should include all sources of inaccuracy including any loss of accuracy from the response curve inaccuracy. | No | Real |
+| outputUnits | The output (electrical) units of the sensor. This may be useful to the sensor/effecter integrator when defining the input circuitry and input curve for the controller. | No | String |
+| responseCurve | An array of DataPoint objects that specify the response curve of the sensor. DataPoint objects are described in section 5.2.4.5 | No | Array of at least two DataPoint objects |
+
 **REQ 5.740**:  SensorDefinition objects shall consist of the structure found in Table 49.
 
 **REQ 5.750**:  Sensor JSON files shall contain one SensorDefinition object. 5.4 Numeric Effecter Json Each numeric effecter connected to the system should have an Effecter JSON file associated with it. The purpose of this file is to provide information to the configuration process regarding the effecter type, output characteristics and sensitivity. The content of this file can be provided by the effecter manufacturer, or in most cases, created from the devices’ data sheet. The structure of the file is shown in Table 50.
 
+### Table 50:  EffecterDefinition JSON object structure
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| name | A human-readable name that identifies the effecter model. This should also be the file name (minus extension) of the effecter JSON file. | No | String |
+| manufacturer | The manufacturer of the effecter. | No | String |
+| partNumber | The manufacturer’s part number for the effecter. | No | String |
+| description | A text description of the sensor that may be helpful in understanding its capabilities. | No | String |
+| supportedInterfaces | An array of electrical interface types that No this sensor can work with. The interface must match one of those found in section 5.2.1.1 Array of String (cannot be empty) maxSampleRate The maximum allowed output sample rate for this effecter, expressed in Hz. If null, there is no maximum sample rate. | Yes | Number |
+| baseUnit | A numeric descriptor for the base units of the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is output by the effecter (as opposed to the control input of the effecter). | No | Integer |
+| unitModifier | A numeric descriptor for the base unit modifier for the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is output by the effecter (as opposed to the control input of the effecter). | No | Integer |
+| rateUnit | A numeric descriptor for the rate units of the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is controlled by the effecter (as opposed to the control input of the effecter). | No | Integer |
+| auxUnit | A numeric descriptor for the aux units of the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is controlled by the effecter (as opposed to the control input of the effecter). | No | Integer |
+| auxUnitModifier | A numeric descriptor for the aux unit modifier for the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is controlled by the effecter (as opposed to the control input of the effecter). | No | Integer |
+| rel | The relationship between the base unit and the auxiliary unit, as follows: <br>value = { “dividedBy”, “multipliedBy”} <br>“dividedBy” implies a "/" or "per" relationship, such as "per foot" <br>“multipliedBy” implies a "*" operation, such as "foot*lbs (foot-lbs)" <br>This field definition is derived from an identically named field in PLDM Numeric Sensor / Effecter PDRs as defined by DSP0248. | No | String |
+| auxRateUnit | A numeric descriptor for the aux rate unit modifier for the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is controlled by the effecter (as opposed to the control input of the effecter). | No | Integer |
+| plusAccuracy | The maximum amount the effecter output may overshoot the requested value (under normal conditions). This value should include all sources of inaccuracy including any loss of accuracy from the response curve inaccuracy. | No | Real |
+| minusAccuracy | The maximum amount the sensor may undershoot the requested value (under normal conditions). This value should include all sources of inaccuracy including any loss of accuracy from the response curve inaccuracy. | No | Real |
+| inputUnits | The input (electrical) units of the effecter. This may be useful to the sensor/effecter integrator when defining the output circuitry and output curve for the controller. | No | String |
+| responseCurve | An array of DataPoint objects that specify the response curve of the effecter. DataPoint objects are described in section 5.2.4.5. | No | Array of at least two DataPoint objects |
+| ratedMax | The maximum rated output value of the effecter. If null, there is no rated maximum value | Yes | Real |
+| nominalValue | The nominal rated value of the effecter. If null, there is no nominal value. | Yes | Real |
+
 **REQ 5.760**:  EffecterDefinition objects shall consist of the structure found in Table 50.
 
 **REQ 5.770**:  Effecter JSON files shall contain one EffecterDefinition object. 5.5 Config File The primary output of the configuration process is the config file. This file is built from the initial capabilities of the controller and any bound sensors/effecters and has been fully configured so that: 1. All required optional Logical Entities have been selected. 2. All required I/O bindings have been configured, including specification of sensors/effecters and device input/output curves. 3. Values for all required parameters have been set. 4. All device constraints for pins and channels have been met. It is envisioned that the configuration process will proceed as follows: 1. Copy the entire ControllerCapabilities object from the controller vendor into the capabilities section of the config file. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 109 2. Create a new, blank ControllerCapabilities object in the configuration section of the config file. 3. Copy any required FruRecord objects from the capabilities section to the configuration section of the config file. 4. Copy any required LogicalEntity objects from the capabilities section to the configuration section of the config file. 5. Allow the sensor/effecter integrator to proceed with configuration as guided by the constraints found in the capabilities section of the config file. a. Optional logical entities may be selected based on the configuration capabilities. b. Values for non-null FruField values may be set c. Values for I/O bindings and parameters may be set as guided by configuration constraints. d. New FRU records may be created. 6. Once all required null values are replaced with configured values, the config file may be saved. As a final step, the configuration process adds definitions for any OEM state sets referenced in the config file. An example configuration file can be found in the following repository: https://github.com/PICMG/iot_configurator.git. 5.5.1 Config file Structure The general format of the config file is found in Table 51.
+
+### Table 51:  ConfigFile object structure
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| capabilities | The original (unmodified) ControllerCapabilities object from the controller device manufacturer | No | ControllerCapabilities object |
+| configuration | The configuration for the device. | No | Configuration object |
+| oemStateSets | An array of state set definitions for the oem state sets used by this configuration. | No | Array of stateSet objects |
 
 **REQ 5.780**:  The config file shall consist of a single ConfigFile object.
 
@@ -619,6 +1415,16 @@
 
 **REQ 5.1340**: Value fields within enumerated Parameter objects within the Configuration object shall have their value set to one of the enumerated choices defined in the Parameter. 5.5.6 OemStateSet Objects The config file introduces an array of OemStateSet objects for the purpose of providing OEM state set information to build tools that may need to generate OEM State Set PDRs. OEM state sets should be included in the file for any OEM state set that is referenced within the config file’s config object. The structure of an OemStateSet object closely follows that of the OEM State Set PDR and is shown in Table 52.
 
+### Table 52:  OemStateSet object structure
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| name | The name of the state set. | No | String |
+| vendorName | The name of the vendor that is responsible for this state set | No | String |
+| vendorIANA | The IANA enterprise number for the vendor that defined the OEM state set. | No | Integer |
+| stateSetID | The OEM state set ID that uniquely identifies this state set from all other state sets from the same vendor. | No | Integer |
+| oemStateValueRecords | An array of one or more oemStateValueRecord objects that define each state in the set. | No | Array of oemStateSetValueRecord objects |
+
 **REQ 5.1350**: OemStateSet objects shall consist of the structure found in Table 52.
 
 **REQ 5.1360**: An OemStateSet object shall exist for each unique stateSetVendorIANA/stateSet value pair found in the IOBindings of the Configuration object where stateSetVendorIANA does not have a value of 412 (DMTF).
@@ -627,93 +1433,22 @@
 
 **REQ 5.1380**: There shall be no duplicate OemStateSet objects within the Configuration object’s oemStateSets array. 5.5.6.1 OemStateSetValueRecord Objects The OemStateSetValue record object defines each state in an OEM State Set. The structure parallels the OEMStateValueRecord in DMTF-DSP0248 and is shown in Table 53.
 
+### Table 53:  OemStateSetValueRecord object structure
+
+| Keyword | Description | Nullable | Data Type |
+|---|---|---|---|
+| minStateValue | The lowest state enumeration value that corresponds to this state. | No | Unsigned Integer |
+| maxStateValue | The highest state enumeration value that corresponds to this state. | No | Unsigned Integer |
+| languageTags | An array of one or more strings that hold a language tag for the state corresponding state stateName array. Language tags are defined in RFC4646. | No | Array of String |
+| stateName | An array of state names for this state. Each element in the array represents the state name in the language corresponding to the same element in the languageTags array. | No | Array of String |
+
 **REQ 5.1390**: OemStateSetValueRecord objects shall consist of the structure found in Table 53. PICMG IoT.1 RD1.17 Specification IIoT Firmware Specification 7/19/2021 Page 116
 
 ---
 
-## Specification Tables
+## Additional Specification Tables
 
-### Table 2: Parameters for Trapezoidal Motion Profile
-
-| Parameter Name | Description | Typical Units |
-|---|---|---|
-| Aprofile | The acceleration of the motor in the acceleration phase of the trapezoidal motion profile. For s-curve motion, this parameter is the average acceleration reached in the acceleration phase. | rad/sec2 |
-| Vprofile | The velocity of the motor in the constant-velocity region of the motion profile | rad/sec |
-| Pfinal | The final position of the motor after completion of the motion. | rad |
-
-
-### Table 3: Terminus Locator PDR
-| Offset | Length | Definition |
-|---|---|---|
-|0|4|Record Handle|
-|4|1|PDR Header Version. For all records defined in this specification avalue of 01h shall be used.|
-|5|1|PDR Type. For the Terminus Locator PDR, the value 01h is used.|
-|6|2|recordChangeNumber. Consult [DMTF-0248] for more information.|
-|8|2|dataLength – the total number of PDR bytes following this field.|
-|10|2|PLDM Terminus Handle. For this specification, the value 0001h is used.|
-|12|1|Validity. For this specification, the value 01h (valid) is used.|
-|13|1|TID. For this specification, the value 01h (unassigned) is used.|
-|14|2|Container ID. For this specification, the value 0001h is used.|
-|16|1|Terminus Locator Type.<br>00h = UID<br>01h = MCTP_EID <br> Other Terminus Locator Types are not used for this specification.|
-|17|2|Terminus Locator Value Size. Depends on Terminus Locator Type. <br>Use 0011h (17) for UID Terminus Locator Type. <br>Use 0001h (1) for MCTP_EID Terminus Locator Type.|
-|Terminus Locator Value for Terminus Locator Type = UID|
-|18|1|Terminus Instance.|
-|19|16|Device UID.|
-|Terminus Locator Value for Terminus Locator Type = MCTP_EID |
-|35|1|EID. For this specification, the value 01h (unassigned) is used.|
-
-
-### Table 4: Entity Association PDR
-
-| Offset | Length | Definition |
-|---|---|---|
-| 0 | 4 | Record Handle |
-| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
-| 5 | 1 | PDR Type. For the Entity Association PDR, the value 15h is used. |
-| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
-| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
-| 10 | 2 | Container ID. For this specification, the value 0001h is used. |
-| 12 | 1 | Association Type. For this specification, the value 01h (logicalContainment) is used. |
-| | | **Container Entity Identification Information** |
-| 13 | 2 | Container Entity Type. Defines type of the entity that the Endpoint terminus. |
-| 15 | 2 | Container Entity Instance Number. For this specification, the value 0001h is used. |
-| 17 | 2 | Container Entity Container ID. For this specification, the value 0000h (SYSTEM) is used. |
-| | | **Contained Entity Identification Information** |
-| 19 | 1 | Contained Entity Count. For this specification, the value 0001h is used. |
-| 20 | 2 | Contained Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
-| 22 | 2 | Contained Entity Instance Number. For this specification, the value 0001h is used. |
-| 24 | 2 | Contained Entity Container ID. For this specification, the value 0001h is used. |
-
-### Table 5: OEM EntityID PDR
-
-| Offset | Length | Definition |
-|---|---|---|
-| 0 | 4 | Record Handle |
-| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
-| 5 | 1 | PDR Type. For the OEM Entity PDR, the value 15h is used. |
-| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
-| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
-| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
-| 12 | 2 | OEM Entity ID Handle. For this specification, the value 6000h is used. |
-| 14 | 4 | Vendor IANA. For this specification, the value 12634 is used. |
-| 18 | 2 | Vendor Entity ID.<br>0001h = Simple Sensor/Effecter<br>0002h = PID control<br>0003h = Profiled Motion control<br>Other values are not used for this specification. |
-| 20 | 1 | String Count. For this specification, the value 01h is used. |
-| 21 | 3 | Entity ID Language. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 24 | Variable | Entity ID Name. A null-terminated Unicode string in UTF-16BE<br>format.<br>“Simple” for Vendor Entity ID = 0001h.<br>“PID” for Vendor Entity ID = 0002h.<br>“Profiled” for Vendor Entity ID = 0003h. |
-
-### Table 6: FRU Record Set PDR
-
-| Offset | Length | Definition |
-|---|---|---|
-| 0 | 4 | Record Handle |
-| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
-| 5 | 1 | PDR Type. For the Entity Association PDR, the value 20h is used. |
-| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
-| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
-| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
-| 12 | 2 | FRU Record Set Identifier. For this specification, the value 0001h is used. |
-| 14 | 2 | Entity Type. For this specification, the value must match the Container Entity Type value in the Entity Association PDR. See Table 4. |
-| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
+*Tables referenced but not associated with specific requirements:*
 
 ### Table 7: Global Interlock State Sensor PDR
 
@@ -759,48 +1494,6 @@
 | 27 | 1 | Possible State Size. For this specification, the value 01h is used. |
 | 28 | 1 | Possible States. For this specification, the value 03h is used. |
 
-### Table 9: Trigger State Sensor PDR
-
-| Offset | Length | Definition |
-|---|---|---|
-| 0 | 4 | Record Handle |
-| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. Offset Length |
-| 5 | 1 | PDR Type. For the State Sensor PDR, the value 04h is used. |
-| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
-| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
-| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
-| 12 | 2 | Sensor ID. For this specification, the value 0002h is used. |
-| 14 | 2 | Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
-| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
-| 18 | 2 | Container ID. For this specification, the value 0001h is used. |
-| 20 | 1 | Sensor Init. For this specification, the value 00h (noInit) is used. |
-| 21 | 1 | Sensor Auxiliary Names PDR. |
-| 22 | 1 | Composite Sensor Count. For this specification, the value 01h is used. Sensor Possible States |
-| 23 | 2 | State Set ID. This is a unique value in the OEM state set range such that it references a Trigger OEM State Set PDR. |
-| 25 | 1 | Possible State Size. For this specification, the value 01h is used. |
-| 26 | 1 | Possible States. For this specification, the value 03h is used. in Table 10. The Device PDR repository shall contain a State Effecter PDR for Trigger as depicted |
-
-### Table 10: Trigger State Effecter PDR
-
-| Offset | Length | Definition |
-|---|---|---|
-| 0 | 4 | Record Handle |
-| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
-| 5 | 1 | PDR Type. For the State Effecter PDR, the value 0Bh is used. |
-| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
-| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
-| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
-| 12 | 2 | Effecter ID. For this specification, the value 0002h is used. Offset Length |
-| 14 | 2 | Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
-| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
-| 18 | 2 | Container ID. For this specification, the value 0001h is used. |
-| 20 | 2 | Effecter Semantic ID. For this specification, the value 0000h (unspecified) is used. |
-| 22 | 1 | Effecter Init. For this specification, the value 00h (noInit) is used. |
-| 23 | 1 | Effecter Description PDR. |
-| 24 | 1 | Composite Effecter Count. For this specification, the value 01h is used. Effecter Possible States |
-| 25 | 2 | State Set ID. This is a unique value in the OEM state set range such that it references a Trigger OEM State Set PDR. |
-| 27 | 1 | Possible State Size. For this specification, the value 01h is used. |
-
 ### Table 11: Trigger OEM State Set PDR
 
 | Offset | Length | Definition |
@@ -828,729 +1521,3 @@
 | 70 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
 | 73 | 42 | State Name. A null-terminated Unicode string “Trigger Deactivated” in UTF16BE format. |
 
-### Table 12: Sensor IDs
-
-| ID | Sensor Description|
-|---|---|
-| 1 | Global Interlock state Sensor|
-| 2 | Trigger state Sensor |
-
-
-### Table 13: Effecter IDs
-
-|ID|Effecter Description|
-|---|---|
-|1|Global Interlock state Effecter|
-|2|Trigger state Effecter|
-
-### Table 14: PID Endpoint Configuration Parameters
-
-|Configuration Parameter Name |Description |Type|
-|---|---|---|
-|GlobalInterlockEffecter | A structure that defines the binding between the global interlock Effecter and specific device pin(s). For more information on I/O bindings, consult section 5 of this specification.|I/O Binding|
-|GlobalInterlockSensor|A structure that defines the binding between the global interlock Sensor and specific device pin(s). For more information on I/O bindings, consult section 5 of this specification.|I/O Binding|
-|TriggerEffecter|A structure that defines the binding between the I/O Binding trigger Effecter and specific device pin(s). For more information on I/O bindings, consult section 5 of this specification. | I/O Binding |
-|TriggerSensor|A structure that defines the binding between the trigger Sensor and specific device pin(s). For more information on I/O bindings, consult section 5 of this specification.|I/O Binding|
-
-
-### Table 15: PID Controller OEM State Set PDR
-
-| Offset | Length | Definition |
-|---|---|---|
-| 0 | 4 | Record Handle |
-| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
-| 5 | 1 | PDR Type. For the OEM State Set PDR, the value 08h is used. |
-| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
-| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
-| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
-| 12 | 2 | OEM State Set ID Handle. A unique value in the OEM state set range. |
-| 14 | 4 | Vendor IANA. For this specification, the value 12634 is used. |
-| 18 | 2 | OEM State Set ID. For this specification, the value 0002h is used. |
-| 20 | 1 | Unspecified Value Hint. For this specification, the value 01h (treatAsError) is used. |
-| 21 | 2 | State Count. For this specification, the value 04h is used. OEM State Value Record |
-| 23 | 1 | Min State Value. For this specification, the value 01h is used. |
-| 24 | 1 | Max State Value. For this specification, the value 01h is used. |
-| 25 | 1 | String Count. For this specification, the value 01h is used. |
-| 26 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 29 | 10 | State Name. A null-terminated Unicode string “Idle” in UTF-16BE format. OEM State Value Record |
-| 39 | 1 | Min State Value. For this specification, the value 02h is used. |
-| 40 | 1 | Max State Value. For this specification, the value 02h is used. |
-| 41 | 1 | String Count. For this specification, the value 01h is used. |
-| 42 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 45 | 30 | State Name. A null-terminated Unicode string “ConditionStop” in UTF-16BE format. OEM State Value Record |
-| 75 | 1 | Min State Value. For this specification, the value 03h is used. Offset Length |
-| 76 | 1 | Max State Value. For this specification, the value 03h is used. |
-| 77 | 1 | String Count. For this specification, the value 01h is used. |
-| 78 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 81 | 20 | State Name. A null-terminated Unicode string “ErrorStop” in UTF-16BE format. OEM State Value Record |
-| 101 | 1 | Min State Value. For this specification, the value 04h is used. |
-| 102 | 1 | Max State Value. For this specification, the value 04h is used. |
-| 103 | 1 | String Count. For this specification, the value 01h is used. |
-| 104 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 107 | 16 | State Name. A null-terminated Unicode string “Running” in UTF-16BE format. PID Controller Command State Set as described in Table 16. |
-
-### Table 16: PID Controller Command OEM State Set PDR
-
-| Offset | Length | Definition |
-|---|---|---|
-| 0 | 4 | Record Handle |
-| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
-| 5 | 1 | PDR Type. For the OEM State Set PDR, the value 08h is used. |
-| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
-| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
-| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
-| 12 | 2 | OEM State Set ID Handle. A unique value in the OEM state set range. |
-| 14 | 4 | Vendor IANA. For this specification, the value 12634 is used. |
-| 18 | 2 | OEM State Set ID. For this specification, the value 0003h is used. |
-| 20 | 1 | Unspecified Value Hint. For this specification, the value 01h (treatAsError) is used. |
-| 21 | 2 | State Count. For this specification, the value 02h is used. OEM State Value Record Offset Length |
-| 23 | 1 | Min State Value. For this specification, the value 01h is used. |
-| 24 | 1 | Max State Value. For this specification, the value 01h is used. |
-| 25 | 1 | String Count. For this specification, the value 01h is used. |
-| 26 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 29 | 12 | State Name. A null-terminated Unicode string “Start” in UTF-16BE format. OEM State Value Record |
-| 41 | 1 | Min State Value. For this specification, the value 02h is used. |
-| 42 | 1 | Max State Value. For this specification, the value 02h is used. |
-| 43 | 1 | String Count. For this specification, the value 01h is used. |
-| 44 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 47 | 10 | State Name. A null-terminated Unicode string “Stop” in UTF-16BE format. PID Controller State as described in Table 17. |
-
-### Table 17: PID Controller State Sensor PDR
-
-| Offset | Length | Definition |
-|---|---|---|
-| 0 | 4 | Record Handle |
-| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
-| 5 | 1 | PDR Type. For the State Sensor PDR, the value 04h is used. |
-| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
-| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
-| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
-| 12 | 2 | Sensor ID. For this specification, the value 0003h is used. |
-| 14 | 2 | Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
-| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
-| 18 | 2 | Container ID. For this specification, the value 0001h is used. |
-| 20 | 1 | Sensor Init. For this specification, the value 00h (noInit) is used. Offset Length |
-| 21 | 1 | Sensor Auxiliary Names PDR. |
-| 22 | 1 | Composite Sensor Count. For this specification, the value 01h is used. Sensor Possible States |
-| 23 | 2 | State Set ID. A value that references a PID Controller Operational State Set OEM State Set PDR. |
-| 25 | 1 | Possible State Size. For this specification, the value 01h is used. |
-| 26 | 1 | Possible States. For this specification, the value 0Fh is used. PID Controller Command Effecter as described in Table 18. |
-
-### Table 18: PID Controller Command Effecter PDR
-
-| Offset | Length | Definition |
-|---|---|---|
-| 0 | 4 | Record Handle |
-| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
-| 5 | 1 | PDR Type. For the State Effecter PDR, the value 0Bh is used. |
-| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
-| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
-| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
-| 12 | 2 | Effecter ID. For this specification, the value 0003h is used. |
-| 14 | 2 | Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
-| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
-| 18 | 2 | Container ID. For this specification, the value 0001h is used. |
-| 20 | 2 | Effecter Semantic ID. For this specification, the value 0000h (unspecified) is used. |
-| 22 | 1 | Effecter Init. For this specification, the value 00h (noInit) is used. |
-| 23 | 1 | Effecter Description PDR. |
-| 24 | 1 | Composite Effecter Count. For this specification, the value 01h is used. Effecter Possible States Offset Length |
-| 25 | 2 | State Set ID. A value that references a PID Controller Command OEM State Set PDR. |
-| 27 | 1 | Possible State Size. For this specification, the value 01h is used. |
-| 28 | 1 | Possible States. For this specification, the value 03h is used. NOTE: Other PDRs may be present within the PID Controller Endpoint so long as they do not prevent meeting the stated requirements. |
-
-### Table 19: PID Controller State Transitions
-
-|State|Event|Next State|
-|---|---|---|
-|Idle|Command: Start|Running|
-|Running|Command: Stop|Idle|
-||Error Sensor over critical threshold|ConditionStop|
-||Feedback Sensor over critical threshold|ConditionStop|
-||Trigger Sensor is active|ConditionStop|
-||Error Sensor over fatal threshold|ErrorStop|
-||Feedback Sensor over fatal threshold|ErrorStop|
-||Global interlock Sensor is active|ErrorStop|
-|ComnditionStop|Command: Stop|Idle|
-||Error Sensor over fatal threshold|ErrorStop|
-||Feedback Sensor over fatal threshold|ErrorStop|
-||Global interlock Sensor is active|ErrorStop|
-|ErrorStop|Command: Stop|Idle|
-
-### Table 20: PID Controller Sensor IDs
-
-|ID|Sensor Description|
-|---|---|
-|1|Global Interlock state Sensor|
-|2|Trigger state Sensor|
-|3|PID OperationalState Sensor|
-|4|PID Control Error numeric Sensor|
-|5|Feedback numeric Sensor|
-
-### Table 21: PID Controller Effecter IDs
-
-|ID|Effecter Description|
-|---|---|
-|1|Global Interlock state Effecter|
-|2|Trigger state Effecter|
-|3|Command Effecter|
-|4|Setpoint numeric Effecter|
-|5|Proportional gain numeric Effecter|
-|6|Integral gain numeric Effecter|
-|7|Differential gain numeric Effecter|
-
-### Table 22: PID Controller IOBindings
-
-|IOBinding Name|Description|I/O Binding Type|“virtual” Field Value|“required” Field Value|Include in PDR|
-|---|---|---|---|---|---|
-|GlobalInterlockEffecter|Global interlock Effecter|State Effecter|false|true|true|
-|GlobalInterlockSensor|Global interlock Sensor|State Sensor|false|true|true|
-|TriggerEffecter|Trigger Effecter|State Effecter|false|true|true|
-|TriggerSensor|Trigger Effecter|State Sensor|false|true|true|
-|Feedback|The PID feedback Sensor|Numeric Effecter|false|true|false|
-|OutputEffecter|the PID output Effecter|Numeric Effecter|false|true|false|
-|Command|The command Effecter|State Effecter|true|true|true|
-|OperationalState|The operational state Sensor|State Sensor|true|true|true|
-|ProportionalGain|The proportional gain Effecter|Numeric Effecter|true|true|true|
-|IntegralGain|The integral gain Effecter|Numeric Effecter|true|true|true|
-|Setpoint|The PID setpoint Effecter|Numeric Effecter|true|true|true|
-|Error|The position error virtual Sensor|Numeric Sensor|true|false|true|
-
-
-### Table 23: PID Controller Configurations
-
-|Configuration Parameter Name|Description|Type|
-|---|---|---|
-|SampleRate|The sample rate of the PID controller expressed in Hertz. The sample rate controls the rate at which the feedback signal is sampled and the output signal is updated.|Type|
-
-
-### Table 24: Profiled Motion Controller OEM State Set PDR
-
-| Offset | Length | Definition |
-|---|---|---|
-| 0 | 4 | Record Handle |
-| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
-| 5 | 1 | PDR Type. For the OEM State Set PDR, the value 08h is used. |
-| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
-| 8 | 2 | dataLength – the total number of PDR bytes following this field. Offset Length |
-| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
-| 12 | 2 | OEM State Set ID Handle. A unique value in the OEM state set range. |
-| 14 | 4 | Vendor IANA. For this specification, the value 12634 is used. |
-| 18 | 2 | OEM State Set ID. For this specification, the value 0004h is used. |
-| 20 | 1 | Unspecified Value Hint. For this specification, the value 01h (treatAsError) is used. |
-| 21 | 2 | State Count. For this specification, the value 07h is used. OEM State Value Record |
-| 23 | 1 | Min State Value. For this specification, the value 01h is used. |
-| 24 | 1 | Max State Value. For this specification, the value 01h is used. |
-| 25 | 1 | String Count. For this specification, the value 01h is used. |
-| 26 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 29 | 10 | State Name. A null-terminated Unicode string “Idle” in UTF-16BE format. OEM State Value Record |
-| 39 | 1 | Min State Value. For this specification, the value 02h is used. |
-| 40 | 1 | Max State Value. For this specification, the value 02h is used. |
-| 41 | 1 | String Count. For this specification, the value 01h is used. |
-| 42 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 45 | 30 | State Name. A null-terminated Unicode string “ConditionStop” in UTF-16BE format. OEM State Value Record |
-| 75 | 1 | Min State Value. For this specification, the value 03h is used. |
-| 76 | 1 | Max State Value. For this specification, the value 03h is used. |
-| 77 | 1 | String Count. For this specification, the value 01h is used. |
-| 78 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 81 | 20 | State Name. A null-terminated Unicode string “ErrorStop” in UTF-16BE format. OEM State Value Record |
-| 101 | 1 | Min State Value. For this specification, the value 04h is used. Offset Length |
-| 102 | 1 | Max State Value. For this specification, the value 04h is used. |
-| 103 | 1 | String Count. For this specification, the value 01h is used. |
-| 104 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 107 | 16 | State Name. A null-terminated Unicode string “RunningV” in UTF-16BE format. OEM State Value Record |
-| 123 | 1 | Min State Value. For this specification, the value 05h is used. |
-| 124 | 1 | Max State Value. For this specification, the value 05h is used. |
-| 125 | 1 | String Count. For this specification, the value 01h is used. |
-| 126 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 129 | 18 | State Name. A null-terminated Unicode string “RunningP” in UTF-16BE format. OEM State Value Record |
-| 147 | 1 | Min State Value. For this specification, the value 06h is used. |
-| 148 | 1 | Max State Value. For this specification, the value 06h is used. |
-| 149 | 1 | String Count. For this specification, the value 01h is used. |
-| 150 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 159 | 16 | State Name. A null-terminated Unicode string “Waiting” in UTF-16BE format. OEM State Value Record |
-| 169 | 1 | Min State Value. For this specification, the value 07h is used. |
-| 170 | 1 | Max State Value. For this specification, the value 07h is used. |
-| 171 | 1 | String Count. For this specification, the value 01h is used. |
-| 172 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 175 | 10 | State Name. A null-terminated Unicode string “Done” in UTF-16BE format. |
-
-### Table 25: Profiled Motion Controller Command OEM State Set PDR
-
-| Offset | Length | Definition |
-|---|---|---|
-| 0 | 4 | Record Handle |
-| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
-| 5 | 1 | PDR Type. For the OEM State Set PDR, the value 08h is used. |
-| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
-| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
-| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
-| 12 | 2 | OEM State Set ID Handle. A unique value in the OEM state set range. |
-| 14 | 4 | Vendor IANA. For this specification, the value 12634 is used. |
-| 18 | 2 | OEM State Set ID. For this specification, the value 0005h is used. |
-| 20 | 1 | Unspecified Value Hint. For this specification, the value 01h (treatAsError) is used. |
-| 21 | 2 | State Count. For this specification, the value 03h is used. OEM State Value Record |
-| 23 | 1 | Min State Value. For this specification, the value 01h is used. |
-| 24 | 1 | Max State Value. For this specification, the value 01h is used. |
-| 25 | 1 | String Count. For this specification, the value 01h is used. |
-| 26 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 29 | 12 | State Name. A null-terminated Unicode string “Start” in UTF-16BE format. OEM State Value Record |
-| 41 | 1 | Min State Value. For this specification, the value 02h is used. |
-| 42 | 1 | Max State Value. For this specification, the value 02h is used. |
-| 43 | 1 | String Count. For this specification, the value 01h is used. |
-| 44 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 47 | 10 | State Name. A null-terminated Unicode string “Stop” in UTF-16BE format. OEM State Value Record |
-| 57 | 1 | Min State Value. For this specification, the value 03h is used. |
-| 58 | 1 | Max State Value. For this specification, the value 03h is used. Offset Length |
-| 59 | 1 | String Count. For this specification, the value 01h is used. |
-| 60 | 3 | State Language Tag. A null-terminated ISO646 ASCII string. For this specification, the value “en” is used. |
-| 63 | 12 | State Name. A null-terminated Unicode string “Wait” in UTF-16BE format. |
-
-### Table 26: Profiled Motion Controller State Sensor PDR
-
-| Offset | Length | Definition |
-|---|---|---|
-| 0 | 4 | Record Handle |
-| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
-| 5 | 1 | PDR Type. For the State Sensor PDR, the value 04h is used. |
-| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
-| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
-| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
-| 12 | 2 | Sensor ID. For this specification, the value 0003h is used. |
-| 14 | 2 | Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
-| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
-| 18 | 2 | Container ID. For this specification, the value 0001h is used. |
-| 20 | 1 | Sensor Init. For this specification, the value 00h (noInit) is used. |
-| 21 | 1 | Sensor Auxiliary Names PDR. |
-| 22 | 1 | Composite Sensor Count. For this specification, the value 01h is used. Sensor Possible States |
-| 23 | 2 | State Set ID. A value that references a Profiled Motion Controller OEM State Set PDR. |
-| 25 | 1 | Possible State Size. For this specification, the value 01h is used. |
-| 26 | 1 | Possible States. For this specification, the value 7Fh is used. Profiled Motion Controller Command Effecter as described in Table 27. |
-
-### Table 27: Profiled Motion Controller Command Effecter PDR
-
-| Offset | Length | Definition |
-|---|---|---|
-| 0 | 4 | Record Handle |
-| 4 | 1 | PDR Header Version. For all records defined in this specification a value of 01h shall be used. |
-| 5 | 1 | PDR Type. For the State Effecter PDR, the value 0Bh is used. |
-| 6 | 2 | recordChangeNumber. Consult [DMTF-0248] for more information. |
-| 8 | 2 | dataLength – the total number of PDR bytes following this field. |
-| 10 | 2 | PLDM Terminus Handle. For this specification, the value 0001h is used. |
-| 12 | 2 | Effecter ID. For this specification, the value 0003h is used. |
-| 14 | 2 | Entity Type. For this specification, the value 6000h (OEM System Integrator defined) is used. |
-| 16 | 2 | Entity Instance Number. For this specification, the value 0001h is used. |
-| 18 | 2 | Container ID. For this specification, the value 0001h is used. |
-| 20 | 2 | Effecter Semantic ID. For this specification, the value 0000h (unspecified) is used. |
-| 22 | 1 | Effecter Init. For this specification, the value 00h (noInit) is used. |
-| 23 | 1 | Effecter Description PDR. |
-| 24 | 1 | Composite Effecter Count. For this specification, the value 01h is used. Effecter Possible States |
-| 25 | 2 | State Set ID. A value that references a Profiled Motion Controller Command OEM State Set PDR. |
-| 27 | 1 | Possible State Size. For this specification, the value 01h is used. |
-| 28 | 1 | Possible States. For this specification, the value 07h is used. NOTE: Other PDRs may be present within the Profiled Motion Controller Endpoint so long as they do not prevent meeting the stated requirements. |
-
-### Table 28: Profiled Motion Controller State Transitions
-
-|State|Event|Next State|
-|---|---|---|
-|Idle| Command: Start & Pfinal Effecter enabled|RunningP|
-||Command: Start & Pfinal Effecter disabled|RunningV|
-||Command: Wait|Waiting|
-|RunningP|Command: Stop|Idle|
-||Final Position Reached (profiled position motion only)|Done|
-||Command: Start (profiled velocity move only)|Running|
-||PositiveLimit Sensor (if it is enabled) is Pressed/On and motion is in the positive direction|ConditionStop|
-||NegativeLimit Sensor Condition (if it is enabled) is Pressed/On and motion is in the negative direction|Stop|
-||Perror or Verror Sensor over criticalthreshold|ConditionStop|
-||Position or Velocity Sensor over critical threshold|ConditionStop|
-||Trigger Sensor is active|ConditionStop|
-||Perror or Verror Sensor over fatal threshold|ErrorStop|
-||Position or Velocity Sensor over critical threshold|ErrorStop|
-||Feedback Sensor over fatal threshold|ErrorStop|
-||Global interlock Sensor is active|ErrorStop|
-|RunningV|Command: Stop|Idle|
-||Command: Start|RunningV, latching in new Vprofile and Aprofile|
-||PositiveLimit Sensor (if it is enabled) is Pressed/On and motion is in the positive direction|ConditionStop|
-||NegativeLimit Sensor (if it is enabled) is Pressed/On and motion is in the negative direction|ConditionStop|
-|Waiting|Perror or Verror Sensor over critical threshold|ConditionStop|
-||Position or Velocity Sensor over critical threshold|ConditionStop|
-||Trigger Sensor is active|ConditionStop|
-||Perror or Verror Sensor over fatal threshold|ErrorStop|
-||Position or Velocity Sensor over critical threshold|ErrorStop|
-||Feedback Sensor over fatal threshold|ErrorStop|
-||Global interlock Sensor is active|ErrorStop|
-||Trigger Sensor is positive edge|ConditionStop|
-||Trigger Sensor|negative edge & Pfinal was enabled at transition to Waiting state|RunningP|
-||Trigger Sensor negative edge & Pfinal was disabled at transition to Waiting state| RunningV |
-||Global interlock Sensor is active|ErrorStop|
-||Command: Stop|Idle|
-|Done|Command: Stop|Idle|
-|ConditionStop|Error Sensor over fatal threshold|ErrorStop|
-||Feedback Sensor over fatal threshold|ErrorStop|
-||Global interlock Sensor is active|ErrorStop|
-||Command: Stop|Idle|
-|ErrorStop|Command: Stop|Idle|
-
-### Table 29: Profiled Motion Controller Sensor IDs
-
-|ID|Sensor Description|
-|---|---|
-|1|Global Interlock state Sensor|
-|2|Trigger state Sensor|
-|3|MotionState state Sensor|
-|4|Verror numeric Sensor|
-|5|Perror numeric Sensor|
-|6|Velocity numeric Sensor|
-|7|Position numeric Sensor|
-|8|PositiveLimit state Sensor|
-|9|NegativeLimit state Sensor|
-
-### Table 30: Profiled Motion Controller Effecter IDs
-
-|ID|Effecter Description|
-|---|---|
-|1|Global Interlock state Effecter|
-|2|Trigger state Effecter|
-|3|Command Effecter|
-|4|Pfinal numeric Effecter|
-|5|Vprofile numeric Effecter|
-|6|Aprofile numeric Effecter|
-|7|AccelerationGain numeric Effecter|
-
-### Table 31: Profiled Motion Controller IOBindings
-
-|IOBinding Name|Description|I/O Binding Type|“virtual” Field Value|“required” Field Value|Include in PDR|
-|---|---|---|---|---|---|
-|GlobalInterlockEffecter|Global interlock Effecter|State Effecter|false|true|true|
-|GlobalInterlockSensor|Global interlock Sensor|State Sensor|false|true|true|
-|TriggerEffecter|Trigger Effecter|State Effecter|false|true|true|
-|TriggerSensor|Trigger Effecter |State Sensor|false|true|true|
-|PositionSensor|The positional feedback Sensor|Numeric Effecter|false|false (open loop), true (closed loop)|true| 
-|VelocitySensor|The virtual velocity feedback Sensor|Numeric Effecter|true|false|true|
-|PositiveLimit|the positive limit Sensor |State Sensor|false|false|true|
-|NegativeLimit|the negative limit Sensor|State Sensor|false |false|true|
-|OutputEffecter|the PIV output Effecter|Numeric Effecter|false|true|false|
-|OutputEnable|An effecter that enables the output Effecter|State Effecter|true|false|false|
-|BrakeEffecter|the brake Effecter|State Effecter|false|false|false|
-|Command|The command Effecter|State Effecter|true|true|true|
-|MotionState |The motion state Sensor|State Sensor|true|true|true|
-|AccelerationGain|The acceleration gain Effecter|Numeric Effecter|true|false|true|
-|Pfinal|The final position virtual Effecter|Numeric Effecter|true|true|true|
-|Vprofile|The profile velocity virtual Effecter|Numeric Effecter|true|true|true|
-|Aprofile|The profile acceleration virtual Effecter|Numeric Effecter|true|true|true|
-|Verror|The velocity error virtual Sensor|Numeric Sensor|true|false (open loop), true (closed loop)|true|
-|Perror|The position error virtual Sensor|Numeric Sensor|true|false (open loop), true (closed loop)|true|
-
-
-### Table 32: Profiled Motion Controller Configurations
-
-|Configuration Parameter Name|Description|Type|
-|---|---|---|
-|SampleRate|The sample rate of the Profiled Motion Controller expressed in Hertz. The sample rate controls the rate at which the profile is generated, feedback signals are sampled and the output signal is updated.|Numeric|
-|OutputInIdle|This parameter defines the behavior of the output while in the Idle state. Valid options are:<br>0: COAST – the output will be disabled<br>1: HOLD - the output will hold the current position<br>2: BRAKE – the brake will be engaged|Enumeration:|
-|OutputInConditionStop|This parameter defines the behavior of the output while in the ConditionStop state. Valid options are:<br>0: COAST – the output will be disabled<br>1: HOLD - the output will hold the current position<br>2: BRAKE – the brake will be engaged|Enumeration|
-|OutputInErrorStop|This parameter defines the behavior of the output while in the ErrorStop state. Valid options are:<br>0: COAST – the output will be disabled<br>1: HOLD - the output will hold the current position<br>2: BRAKE – the brake will be engaged|Enumeration|
-|DoneTimeConstant|The amount of time between when the profile generator reaches the final position and the controller state machine transitions to DONE. This parameter can be used to unsure that the motion has “settled” prior to signaling the completion of a move.|Numeric|
-|MotionProfile|This parameter defines the shape of the profiled move. Valid options are:<br>0: Trapezoid<br>1: S-Curve|Enumeration|
-
-
-
-### Table 33: Profiled Motion Controller Closed-Loop Configurations
-
-|Configuration Parameter Name|Description|Type|
-|---|---|---|
-|PositionLoopLimit|A unitless constant that expresses the maximum/minimum value that will pass through the limiter in the position loop of the PIV controller (in device units).|Numeric|
-|PositionProportionalGain|A unitless constant that expresses the proportional gain in the position loop of the PIV controller.|Numeric|
-|VelocityProportionalGain A unitless constant that expresses the proportional gain in the velocity loop of the PIV controller.|Numeric|
-|VelocityIntegralGain|A unitless constant that expresses the integral gain in the velocity loop of the PIV controller.|Numeric|
-|VelocityDifferentialGain|A unitless constant that expresses the differential gain in the velocity loop of the PIV controller|Numeric|
-|VelocityFFGain|A unitless constant that expresses the feed forward gain for velocity.|Numeric|
-|OutputGain|A unitless constant that scales the output of the PIV controller|Numeric|
-
-### Table 35: ControllerCapabilities object structure
-
-|Keyword|Description|Nullable| Data Type|
-|---|---|---|---|
-|device|The targeted hardware device for this build. This field can be used to direct the build process for the correct hardware platform.|No|String|
-|pins|An array of unique String names for I/O pins on the device.|No|Array of String|
-|channels|An array of channels supported by the device|No|Array of Channel objects|
-|maxFruBytes|The maximum number of bytes of FRU data the device can support.|No|Unsigned Integer|
-|fruRecords|An array of FRU record objects that are associated with the device’s physical entity|No|Array of fruRecord objects|
-|logicalEntities|An array of all possible logical entity objects supported by the device. The device does not need to support all logical entities at the same time.|No|Array of LogicalEntity objects|
-
-
-### Table 36: Channel object structure
-
-|Keyword|Description|Nullable |Data Type|
-|---|---|---|---|
-|name|A unique name that identifies the channel from all other possible channels on the device.|No|String|
-|type|The type of physical interface this channel is associated. More on electrical interfaces can be found in section 5.2.1.1|No|String|
-|description|An optional description of the channel that may be helpful to the Sensor/Effecter integrator. If not used, this field may be null. It is recommended that this field be used to provide guidance around IOBinding input/output curves.|Yes|String|
-|maxValueAtPin|The maximum quantity that can be measured or output at the device pin. The units of this field varies by electrical interface type.<br>- analog interface types: A voltage in Volts<br>- pwm interface types: a duty cycle between 0 and 100<br>- rate interface types: A frequency in Hertz<br>- all other interface types – not used, set to 0|No|Numeric|
-|minValueAtPin|The minimum quantity that can be measured or output at the device pin. The units of this field varies by electrical interface type.<br>- analog interface types: A voltage in Volts<br>- pwm interface types: a duty cycle between 0 and 100<br>- rate interface types: A frequency in Hertz<br>- all other interface types – not used, set to 0|No|Numeric|
-|precision|The number of precision bits associated with this channel. For instance, a 10-bit analog to digital converter would have a value of 10. Negative values indicate that the internal representation of the channel is signed. A 10 bit analog to digital converter that has a signed output would have a value of -10. For digital_in/out, count, quadrature, and step_dir_enable interface types this field should be set to 0.|No|Integer|
-|accuracy|An error component that scales linearly with the magnitude of the reading, expressed as a percentage (1.0 = 1%). |No|Numeric|
-|pins|An array of PinUse objects associated with this channel. In many cases pins may be shared between multiple channels; however, channels that share pins cannot both be configured for use since pins may only serve one function at a time.|No|Array of PinUse objects|
-
-
-### Table 37: Channel Electrical Interface Types
-
-|Electrical Interface Type Name|Description|
-|---|---|
-|digital_in|A digital input interface corresponding to a single device digital input pin.|
-|analog_in|An analog input interface corresponding to a single device analog input pin.|
-|count_in|A digital input interface associated with a single digital input pin. The controller counts positive edge transitions on this channel and keeps a running total of the transitions.|
-|rate_in|A digital input interface associated with a single digital input pin. The controller counts positive edge transitions on the channel over time and estimates the frequency of the edge transitions from this information. The sampled representation of this electrical type will be an estimate of the edge transitions per second (with possible scaling). |
-|quadrature_in|A digital input interface consisting of two pins: “A”, and “B”, that constitute a quadrature input signal. The controller keeps track of the absolute “position” based on transitions of the input signals relative to each other. Note that the quadrature input interface does not support an index (“Z”) input. Implementations require a index pulse can use a separate digital input channel for this purpose. The sampled representation of this electrical interface type will be the sum of pulses in the positive direction minus the sum of pulses in the negative direction (with possible scaling).|
-|analog_out|An analog output interface consisting of a single analog output pin pin that produces a voltage that is proportional to the controller’s internal representation of the value.|
-|digital_out|A digital output interface associated with a single digital output pin.
-|pwm_out||A digital output interface intended to be used for pulse-widthmodulation. The quantity produced at the output pin of the controller is a pulse with a varying duty cycle that is proportional to the controller’s internal representation of the value. This interface type is associated with a single pin.|
-|rate_out|A digital output interface that generates a pulse train with processorcontrolled output rate. This channel is associated with a single pin.|
-|step_dir_out|A digital output interface intended to control stepper motors. The interface consists of three pins. The first pin will send pulses to the motor to make it move one step. The second pin controls the direction of the motor. The third pin enables the motor driver. This interface type is always expected to be used in conjunction with a controller (PID, Profiled Motion Controller) logical entity. Control of stepper motors manually can be accomplished by combining rate_out and digital_out electrical interfaces.|
-
-### Table 38: PinUse object structure
-
-|Keyword |Description|Nullable |Data Type|
-|---|---|---|---|
-|name|The name of the pin – the pin name should match one found under the “pins” keyword of the controller capabilities.|No|String|
-|function|A description or name of the pin use when this channel is selected. This information may be useful when connecting physical devices to the controller.|No|String|
-
-
-### Table 39: FruRecord object structure
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| Type | vendorIANA The vendor IANA for the vendor that defined the fru record type. For IANA will be 12634, for general FRU records, the value should be 412 (DMTF) | No | Integer |
-| required | true if this entity must always be present in the device’s configuration. This must be set to true for FruRecords in the ControllerConfiguration | No | Boolean |
-| description | A text description of the fru record that may be useful to the sensor/effecter integerator. | Yes | String |
-| fields | An array of FruField objects that define each field in the FruRecord. | No | Array of |
-
-
-### Table 40:  FruField object structure
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| type | This metadata defines the numeric field type for this field. Field types are specified in DSP0257 | No | Integer |
-| required | true if this field must always be present in the device’s configuration. | No | Boolean |
-| description | A text description of the fru field that may Yes be useful to the sensor/effecter integrator. | Yes | String |
-| format | The data format for the field. Valid options include a subset of those defined in DSP0240 (“uint8”, “sint8”, “uint16”, “sint16”, “uint32”, “sint32”, “uint64”, “sint64”, “string”, “bool8”, “real32”, “real64”, “timestamp104”), and “bytes” which is represented by a jsonArray of unsigned 8-bit integers. | No | String |
-| length | The required length of byte-formatted fields. This field must be specified for fields with the format of “bytes”. For other types of fields it will be ignored and may be null. | Yes | Numeric or null |
-| value | The value of the field. | Yes | Dependent upon the format field of this object2. |
-
-
-### Table 41:  LogicalEntity object structure
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| entityVendorIANA | The vendor IANA for the vendor that defined the entity type. For PICMG, the vendor IANA will be 12634 | No | Integer |
-| vendorEntityID | The vendor entity id associated with this entity. | No | Integer |
-| name | A unique name that identifies this possible instance of the entity. For instance, “pid1” for the first possible instance of a pid controller instance. | No | String |
-| required | true if this entity must always be present in the device’s configuration. | No | Boolean |
-| description | A text description of the logical entity that Yes may be useful to the Sensor/Effecter integerator. | Yes | String |
-| ioBindings | An array of IOBinding objects that define how Sensors/Effecters for this LogicalEntity are bound to device channels. | No | Array of IOBinding objects |
-| parameters | An array of Parameter objects that define configuration parameter options for the LogicalEntity | No | Array of Parameter objects |
-
-
-### Table 42:  IOBinding object structure for State Sensors
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| bindingType | A string that identifies the binding type as a state Sensor binding. | No | “stateSensor” |
-| name | A unique name that identifies this IOBinding from all other IOBinding objects within the LogicalEntity. For required I/O bindings, the name should match those found in sections of this document. | No | String |
-| includeInPdr | If value of this field is true, a corresponding PDR record should be generated in the firmware build process. If the value of this field is false, a PDR record will not be generated – this is useful in cases where binding of a function is required, but no direct interaction with the Sensor is allowed at runtime. | No | Boolean |
-| required | true if this I/O binding is required. False of the binding Sensor is optional for the specific LogicalEntity. | No | Boolean |
-| description | A text description of the function of the I/O binding that may be useful to the Sensor/Effecter integrator. | Yes | String |
-| isVirtual | The value of this field should be set to true if the I/O binding is virtual. Virtual Sensors will not be bound to physical I/O and will not be checked against I/O constraints when configured. | No | Boolean |
-| sensorID | The sensor ID for the sensor bound to this channel. This field may only be null if the sensor is not included in the PDR. | Yes | Integer |
-| allowedInterfaceTypes | An array of allowed electrical interface types that this binding can be configured to work with. See section 5.2.1.1 for possible values. For virtual Sensors this array should be blank. | No | Array of String |
-| boundChannel | The actual channel the Sensor is configured to use. The value of this field should be null for LogicalEntity objects in the ControllerCapabilities. When the device is configured, the value of this field will be changed to match a channel from the channels. IOBindings for virtual Sensors should always leave this value null. | Yes | String |
-| stateSetVendorIANA | The vendor id associated with the state set for this Sensor. If this field is nonnull in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
-| stateSet | The state set id for the state set used by this Sensor. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
-| usedStates | A bitfield that defines which states in the state set are used. Bit 0, corresponds to the first state in the set, bit-1, the second state and so forth. A bit value of 1 means the state is used, otherwise the state is not used. | No |  |
-| Bitfield | stateWhenHigh The state that will be returned when the binary state of the Sensor’s input pin (or virtual pin) is High. The value of this field should correspond to one of the states in the configured state set. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
-| stateWhenLow | The state that will be returned when the binary state of the Sensor’s input pin (or virtual pin) is Low. The value of this field should correspond to one of the states in the configured state set. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
-| possibleStates | A 32-bit bitfield where each bit specifies whether or not a specific state in the state set is used. A value of 1 in the bit specifies that the state is used, a value of 0 specifies that it is not. As an example, a value of 3 for this field means that states 0 and 1 are both used, all others are not. | No | Integer |
-
-### Table 43:  IOBinding object structure for State Effecters
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| bindingType | A string that identifies the binding type as a state Effecter binding. | No | “stateEffecter” |
-| name | A unique name that identifies this IOBinding from all other IOBinding objects within the LogicalEntity. For required I/O bindings, the name should match those found in sections 4.3.5.6 and 4.3.6.8 of this document. | No | String |
-| includeInPdr | If value of this field is true, a corresponding No PDR record should be generated in the firmware build process. If the value of this field is false, a PDR record will not be generated – this is useful in cases where binding of a function is required, but no direct interaction with the Effecter is allowed at runtime. | No | Boolean |
-| required | true if this I/O binding is required. False of the binding is optional for the specific LogicalEntity. | No | Boolean |
-| description | A text description of the function of the I/O binding that may be useful to the Sensor/Effecter integrator. | Yes | String |
-| isVirtual | The value of this field should be set to true if the I/O binding is virtual. Virtual Effecters will not be bound to physical I/O and will not be checked against I/O constraints when configured. | No | Boolean |
-| effecterID | The effecter ID for the effecter bound to this channel. This field may only be null if the effecter is not included in the PDR. | Yes | Integer allowedInterfaceTypes An array of allowed physical interface types that this channel can be configured to work with. See section 5.2.1.1 for possible values. For virtual Effecters this array should be blank. |
-| No | Array of String boundChannel The actual channel the Effecter is configured Yes to use. The value of this field should be null for LogicalEntities in the ControllerCapabilities. When the device is configured, the value of this field will be changed to match a channel from the channels array. IOBindings for virtual Effecters should always leave this value null. | Yes | String |
-| stateSetVendorIANA | The vendor id associated with the state set for this Effecter. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
-| stateSet | The state set id for the state set used by this Effecter. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
-| usedStates | A bitfield that defines which states in the state set are used. Bit 0, corresponds to the first state in the set, bit-1, the second state and so forth. A bit value of 1 means the state is used, otherwise the state is not used. | No |  |
-| Bitfield | stateWhenHigh The state that, when set, will result in a binary High state of the Effecter’s output pin (or virtual pin). The value of this field should correspond to one of the states in the configured state set. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
-| stateWhenLow | The state that, when set, will result in a binary Low state of the Effecter’s output pin (or virtual pin). The value of this field should correspond to one of the states in the configured state set. If this field is non-null in the ControllerCapabilities object, it should not be overridden during configuration. | Yes | Integer |
-| possibleStates | A 32-bit bitfield where each bit specifies whether or not a specific state in the state set is used. A value of 1 in the bit specifies that the state is used, a value of 0 specifies that it is not. As an example, a value of 3 for this field means that states 0 and 1 are both used, all others are not. | No | Integer |
-| defaultState | The default state for the effecter when it is enabled. | Yes | Integer |
-
-
-### Table 44:  IOBinding object structure for Numeric Sensors
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| bindingType | A string that identifies the binding type as a numeric Sensor binding. | No | “numericSensor” |
-| name | A unique name that identifies this IOBinding from all other IOBinding objects within the LogicalEntity. For required I/O bindings, the name should match those found in section sections 4.3.5.6 and 4.3.6.8 of this document. | No | String |
-| includeInPdr | If value of this field is true, a corresponding PDR record should be generated in the firmware build process. If the value of this field is false, a PDR record will not be generated – this is useful in cases where binding of a function is required, but no direct interaction with the Sensor is allowed at runtime. | No | Boolean |
-| required | True if this I/O binding is required. False if the binding Sensor is optional for the specific LogicalEntity. | No | Boolean |
-| description | A text description of the function of the I/O binding that may be useful to the Sensor/Effecter integrator. | Yes | String |
-| isVirtual | The value of this field should be set to true if the I/O binding is virtual. Virtual Sensors will not be bound to physical I/O and will not be checked against I/O constraints when configured. | No | Boolean |
-| sensorID | The sensor ID for the effecter bound to this channel. This field may only be null if the effecter is not included in the PDR. | Yes | Integer |
-| allowedInterfaceTypes | An array of allowed electrical interface types that this binding can be configured to work with. See section 5.2.1.1for possible values. For virtual Sensors this array should be blank. | No | Array of String |
-| sensor | A SensorDefinition object that defines the Sensor characteristics for the Sensor that is bound to this I/O function. It is intended that this field be null in the ControllerCapabilities structure. In the process of configuration it will be populated with a SensorDefintion. Virtual Sensors should leave this field null. | Yes | SensorDefinition object (null expected) |
-| inputCurve | An array of DataPoint objects that specify the input curve of the sampler input (see section 3.3.1). DataPoint objects are defined in section 5.2.4.5. <br>The input value for each point on the curve represent the input to the controller’s input circuitry. The output values represent the quantity present at the controller’s input pin. Physical meaning for the values at the input pin vary by interface type. They are: <br>- analog interface types: A voltage in Volts <br>- rate interface types: A frequency in Hertz <br>- count/quadrature interface types: a count of pulses | Yes | Array of at least two DataPoint objects |
-| boundChannel | The actual channel the Sensor is configured to use. The value of this field should be null for LogicalEntities in the ControllerCapabilities. When the device is configured, the value of this field will be changed to match a channel from the channels array. IOBindings for virtual Sensors should always leave this value null. | Yes | String |
-| inputGearingRatio | The gearing ratio expressed in terms of physical units to measured units expressed as a real number. The measured quantity will be the physical quantity divided by this amount. | Yes | Real |
-| physicalBaseUnit | The base units for the physical quantity measured by this I/O binding (or the virtual base units for virtual Sensors). The values for this field are defined identically to the baseUnit field in the PLDM specification. | Yes | Integer |
-| physicalUnitModifier | The unit modifier for the physical quantity measured by this I/O binding (or the virtual unit modifier for virtual Sensors). The value for this field is defined identically to the baseUnitModifier field in the PLDM specification. | Yes | Integer |
-| physicalRateUnit | The base unit modifier for the physical quantity measured by this I/O binding (or the virtual base unit modifier for virtual Sensors). The value for this field is defined identically to the baseUnitModifier field in the PLDM specification. | Yes | Integer |
-| physicalAuxUnit | The aux unit for the physical quantity measured by this I/O binding (or the virtual aux unit for virtual Sensors). The value for this field is defined identically to the auxUnit field in the PLDM specification. | Yes | Integer |
-| rel | The relationship between the base unit and the auxiliary unit, as follows: <br>value = { “dividedBy”, “multipliedBy”} <br>“dividedBy” implies a "/" or "per" relationship, such as "per foot" <br>“multipliedBy” implies a "*" operation, such as "foot*lbs (foot-lbs)" <br>This field definition is derived from an identically named field in PLDM Numeric Sensor / Effecter PDRs as defined by DSP0248. | Yes | String |
-| physicalAuxUnitModifier | The aux unit modifier for the physical quantity measured by this I/O binding (or the virtual aux unit modifier for virtual Sensors). The value for this field is defined identically to the auxUnitModifier field in the PLDM specification. | Yes | Integer |
-| physicalAuxRateUnit | The aux rate unit for the physical quantity measured by this I/O binding (or the virtual base unit modifier for virtual Sensors). The value for this field is defined identically to the auxRateUnit field in the PLDM specification. | Yes | Integer |
-| normalMax | The normalMax threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
-| normalMin | The normalMin threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
-| upperThresholdWarning | The upper warning threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
-| upperThresholdCritical | The upper critical threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
-| upperThresholdFatal | The upper fatal threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
-| lowerThresholdWarning | The lower warning threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
-| lowerThresholdCritical | The lower critical threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
-| lowerThresholdFatal | The lower fatal threshold value as defined in PLDM specification. If not used or not defined, this value may be null. When specified, this should be expressed in terms of the physical units. | Yes | Real |
-
-### Table 45:  IOBinding object structure for Numeric Effecters
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| bindingType | A string that identifies the binding type as a numeric Effecter binding. | No | “numericEffecter” |
-| name | A unique name that identifies this IOBinding from all other IOBinding objects within the LogicalEntity. For required I/O bindings, the name should match those found in section sections 4.3.5.6 and 4.3.6.8 of this document. | No | String |
-| includeInPdr | If value of this field is true, a corresponding PDR record should be generated in the firmware build process. If the value of this field is false, a PDR record will not be generated – this is useful in cases where binding of a function is required, but no direct interaction with the Effecter is allowed at runtime. | No | Boolean |
-| required | true if this I/O binding is required. False if the binding Effecter is optional for the specific LogicalEntity. | No | Boolean |
-| description | A text description of the function of the I/O binding that may be useful to the Sensor/Effecter integrator. | Yes | String |
-| isVirtual | The value of this field should be set to true if the I/O binding is virtual. Virtual Effecters will not be bound to physical I/O and will not be checked against I/O constraints when configured. | No | Boolean |
-| effecterID | The effecter ID for the effecter bound to this channel. This field may only be null if the effecter is not included in the PDR. | Yes | Integer |
-| allowedInterfaceTypes | An array of allowed electrical interface types that this channel can be configured to work with. See section 5.2.1.1 for possible values. For virtual Effecters this array should be blank. | No | Array of String |
-| effecter | An effecterDefinition object that defines the Effecter characteristics for the Effecter that is bound to this I/O function. It is intended that this field be null in the ControllerCapabilities structure. In the process of configuration it will be populated with an effecterDefinition. Virtual Effecters should leave this field null. | Yes | effecterDefinition object (null expected) |
-| outputCurve | An array of DataPoint objects that specify the output curve of the sampler output (see section 3.3.1). DataPoint objects are defined in section 5.2.4.5. <br>The input value for each point on the curve represent the output from the controller’s pin. The output values of this curve represent the quantity present at the exit of any external output circuitry. Physical meaning for the values at the output pin vary by interface type. They are: <br>- analog interface types: A voltage in Volts <br>- pwm interface types: a duty cycle between 0 and 100 <br>- rate interface types: A frequency in Hertz <br>- step_dir_enable – the number of steps to move. | Yes | Array of at least two DataPoint objects |
-| boundChannel | The actual channel the Effecter is configured to use. The value of this field should be null for LogicalEntity object in the ControllerCapabilities. When the device is configured, the value of this field will be changed to match a channel from the channels array. IOBindings for virtual Effecters should always leave this value null. | Yes | String |
-| outputGearingRatio | The gearing ratio expressed in terms of physical units to device output units expressed as a real number. The output quantity will be the physical quantity divided by this amount. | Yes | Real |
-| physicalBaseUnit | The base units for the physical quantity controlled by this I/O binding (or the virtual base units for virtual Effecters). The values for this field are defined identically to the baseUnit field in the PLDM specification. | Yes | Integer |
-| physicalUnitModifier | The unit modifier for the physical quantity controlled by this I/O binding (or the virtual unit modifier for virtual Effecters). The value for this field is defined identically to the baseUnitModifier field in the PLDM specification. | Yes | Integer |
-| physicalRateUnit | The base unit modifier for the physical quantity controlled by this I/O binding (or the virtual base unit modifier for virtual Effecters). The value for this field is defined identically to the baseUnitModifier field in the PLDM specification. | Yes | Integer |
-| physicalAuxUnit | The aux unit for the physical quantity controlled by this I/O binding (or the virtual aux unit for virtual Effecters). The value for this field is defined identically to the auxUnit field in the PLDM specification. | Yes | Integer |
-| rel | The relationship between the base unit and the auxiliary unit, as follows: <br>value = { “dividedBy”, “multipliedBy”} <br>“dividedBy” implies a "/" or "per" relationship, such as "per foot" <br>“multipliedBy” implies a "*" operation, such as "foot*lbs (footlbs)" <br>This field definition is derived from an identically named field in PLDM Numeric Sensor / Effecter PDRs as defined by DSP0248. | No | String |
-| physicalAuxUnitModifier | The aux unit modifier for the physical quantity controlled by this I/O binding (or the virtual aux unit modifier for virtual Effecters). The value for this field is defined identically to the auxUnitModifier field in the PLDM specification. | Yes | Integer |
-| physicalAuxRateUnit | The aux rate unit for the physical quantity controlled by this I/O binding (or the virtual base unit modifier for virtual Sensors). The value for this field is defined identically to the auxRateUnit field in the PLDM specification. | Yes | Integer |
-| physicalDefaultValue | The default value for the physical quantity controlled by this I/O binding when it is enabled. This value is specified in real-world units. | Yes | Real |
-
-
-### Table 46:  DataPoint object structure
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| in | The input value | No | Real |
-| out | The resulting output value | No | Real |
-
-
-### Table 47:  Parameter object structure for Numeric parameters
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| parameterType | A string that identifies the parameter type as a numeric parameter. The value of this string should be “integer” for signed or unsigned integers or “real” for real-valued parameters. | No | String (“integer” or “real”) |
-| name | A unique name that identifies this Parameter from all other Parameter objects within the LogicalEntity. | No | String |
-| description | A text description of the parameter that may be useful to the sensor/effecter integrator. | Yes | String |
-| value | The value of the parameter. If null, the parameter must be set during the configuration process. If non-null, the value cannot be altered by the configuration process. by the parameter type | Yes | Numeric of the same type specified |
-| defaultValue | Provided as a hint to the configuration process. The default value of the parameter if no other value is specified. If null, the configuration process will not assume a default value. | Yes | Numeric of the same type specified by the parameter type |
-| maxValue | The maximum value allowed for this parameter. If null, the configuration process should not check for a maximum value. | Yes | Numeric of the same type specified by the parameter type |
-| minValue | The minimum value allowed for this parameter. If null, the configuration process should not check for a minimum value. | Yes | Numeric of the same type specified by the parameter type |
-
-### Table 48:  Parameter object structure for enumerated parameters
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| parameterType | A string that identifies the Parameter type as an enumerated parameter. | No | “enum” |
-| name | A unique name that identifies this Parameter from all other Parameter objects within the LogicalEntity. | No | String |
-| description | A text description of the parameter that may be useful to the sensor/effecter integrator. | Yes | String |
-| value | The value of the parameter. If null, the parameter must be set during the configuration process. If non-null, the value cannot be altered by the configuration process. | Yes | String |
-| defaultValue | Provided as a hint to the configuration process. The default value of the parameter if no other value is specified. If null, the configuration process will not assume a default value. | Yes | String |
-| choices | An array of strings where each element specifies a possible configuration choice. | Yes | Array of String |
-
-
-### Table 49:  SensorDefinition JSON object structure
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| name | A human-readable name that identifies the sensor model. This should also be the file name (minus extension) of the sensor JSON file. | No | String |
-| manufacturer | The manufacturer of the sensor. | No | String |
-| partNumber | The manufacturer’s part number for the sensor. | No | String |
-| description | A text description of the sensor that may be helpful in understanding its capabilities. | No | String |
-| supportedInterfaces | An array of electrical interface types that this effecter can work with. The interface must match one of those found in section 5.2.1.1 | No | Array of String (cannot be empty) |
-| maxSampleRate | The maximum allowed sample rate of this sensor, expressed in Hz. If null, there is no maximum sample rate. | Yes | Number |
-| baseUnit | A numeric descriptor for the base units of the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
-| unitModifier | A numeric descriptor for the base unit modifier for the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
-| rateUnit | A numeric descriptor for the rate units of the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
-| auxUnit | A numeric descriptor for the aux units of the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
-| auxUnitModifier | A numeric descriptor for the aux unit modifier for the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
-| rel | The relationship between the base unit and the auxiliary unit, as follows: <br>value = { “dividedBy”, “multipliedBy”} <br>“dividedBy” implies a "/" or "per" relationship, such as "per foot" <br>“multipliedBy” implies a "*" operation, such as "foot*lbs (foot-lbs)" <br>This field definition is derived from an identically named field in PLDM Numeric Sensor / Effecter PDRs as defined by DSP0248. | No | String |
-| auxRateUnit | A numeric descriptor for the aux rate unit modifier for the sensor. The values for this field are defined in DSP0248. This field applies to the physical quantity that is measured by the sensor (as opposed to the output of the sensor). | No | Integer |
-| plusAccuracy | The maximum amount the sensor may overreport the actual reading. This value should include all sources of inaccuracy including any loss of accuracy from the response curve inaccuracy. | No | Real |
-| minusAccuracy | The maximum amount the sensor may underreport the actual reading. This value should include all sources of inaccuracy including any loss of accuracy from the response curve inaccuracy. | No | Real |
-| outputUnits | The output (electrical) units of the sensor. This may be useful to the sensor/effecter integrator when defining the input circuitry and input curve for the controller. | No | String |
-| responseCurve | An array of DataPoint objects that specify the response curve of the sensor. DataPoint objects are described in section 5.2.4.5 | No | Array of at least two DataPoint objects |
-
-### Table 50:  EffecterDefinition JSON object structure
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| name | A human-readable name that identifies the effecter model. This should also be the file name (minus extension) of the effecter JSON file. | No | String |
-| manufacturer | The manufacturer of the effecter. | No | String |
-| partNumber | The manufacturer’s part number for the effecter. | No | String |
-| description | A text description of the sensor that may be helpful in understanding its capabilities. | No | String |
-| supportedInterfaces | An array of electrical interface types that No this sensor can work with. The interface must match one of those found in section 5.2.1.1 Array of String (cannot be empty) maxSampleRate The maximum allowed output sample rate for this effecter, expressed in Hz. If null, there is no maximum sample rate. | Yes | Number |
-| baseUnit | A numeric descriptor for the base units of the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is output by the effecter (as opposed to the control input of the effecter). | No | Integer |
-| unitModifier | A numeric descriptor for the base unit modifier for the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is output by the effecter (as opposed to the control input of the effecter). | No | Integer |
-| rateUnit | A numeric descriptor for the rate units of the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is controlled by the effecter (as opposed to the control input of the effecter). | No | Integer |
-| auxUnit | A numeric descriptor for the aux units of the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is controlled by the effecter (as opposed to the control input of the effecter). | No | Integer |
-| auxUnitModifier | A numeric descriptor for the aux unit modifier for the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is controlled by the effecter (as opposed to the control input of the effecter). | No | Integer |
-| rel | The relationship between the base unit and the auxiliary unit, as follows: <br>value = { “dividedBy”, “multipliedBy”} <br>“dividedBy” implies a "/" or "per" relationship, such as "per foot" <br>“multipliedBy” implies a "*" operation, such as "foot*lbs (foot-lbs)" <br>This field definition is derived from an identically named field in PLDM Numeric Sensor / Effecter PDRs as defined by DSP0248. | No | String |
-| auxRateUnit | A numeric descriptor for the aux rate unit modifier for the effecter. The values for this field are defined in DSP0248. This field applies to the physical quantity that is controlled by the effecter (as opposed to the control input of the effecter). | No | Integer |
-| plusAccuracy | The maximum amount the effecter output may overshoot the requested value (under normal conditions). This value should include all sources of inaccuracy including any loss of accuracy from the response curve inaccuracy. | No | Real |
-| minusAccuracy | The maximum amount the sensor may undershoot the requested value (under normal conditions). This value should include all sources of inaccuracy including any loss of accuracy from the response curve inaccuracy. | No | Real |
-| inputUnits | The input (electrical) units of the effecter. This may be useful to the sensor/effecter integrator when defining the output circuitry and output curve for the controller. | No | String |
-| responseCurve | An array of DataPoint objects that specify the response curve of the effecter. DataPoint objects are described in section 5.2.4.5. | No | Array of at least two DataPoint objects |
-| ratedMax | The maximum rated output value of the effecter. If null, there is no rated maximum value | Yes | Real |
-| nominalValue | The nominal rated value of the effecter. If null, there is no nominal value. | Yes | Real |
-
-### Table 51:  ConfigFile object structure
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| capabilities | The original (unmodified) ControllerCapabilities object from the controller device manufacturer | No | ControllerCapabilities object |
-| configuration | The configuration for the device. | No | Configuration object |
-| oemStateSets | An array of state set definitions for the oem state sets used by this configuration. | No | Array of stateSet objects |
-
-
-### Table 52:  OemStateSet object structure
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| name | The name of the state set. | No | String |
-| vendorName | The name of the vendor that is responsible for this state set | No | String |
-| vendorIANA | The IANA enterprise number for the vendor that defined the OEM state set. | No | Integer |
-| stateSetID | The OEM state set ID that uniquely identifies this state set from all other state sets from the same vendor. | No | Integer |
-| oemStateValueRecords | An array of one or more oemStateValueRecord objects that define each state in the set. | No | Array of oemStateSetValueRecord objects |
-
-
-### Table 53:  OemStateSetValueRecord object structure
-
-| Keyword | Description | Nullable | Data Type |
-|---|---|---|---|
-| minStateValue | The lowest state enumeration value that corresponds to this state. | No | Unsigned Integer |
-| maxStateValue | The highest state enumeration value that corresponds to this state. | No | Unsigned Integer |
-| languageTags | An array of one or more strings that hold a language tag for the state corresponding state stateName array. Language tags are defined in RFC4646. | No | Array of String |
-| stateName | An array of state names for this state. Each element in the array represents the state name in the language corresponding to the same element in the languageTags array. | No | Array of String |
