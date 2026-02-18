@@ -93,9 +93,30 @@ The compiled `endpoint` binary will be in the `build` directory.
 
 ## Running Device Tests
 
+**Important:** The endpoint requires a JSON configuration file to run. Use the `-c` or `--config` option to specify the configuration file:
+
+```bash
+./build/endpoint -p -c example-simple-endpoint.json
+
+# With serial device
+./endpoint --tty <target tty path> --baud <target baud rate> -c <config.json>
+
+# For example
+./endpoint --tty /dev/ttyS0 --baud 9600 -c my-device-config.json
+```
+
+Example JSON configuration files are provided:
+- `example-simple-endpoint.json` - Basic digital I/O endpoint
+- `example-pid-endpoint.json` - PID controller endpoint
+- `example-profiled-motion-endpoint.json` - Motion control endpoint
+
+See **JSON_CONFIG_QUICKSTART.md** for more details on JSON configuration.
+
+### Running Tests
+
 Start the endpoint code on your unit under test (UUT) with the following command:
 ```bash
-./build/endpoint --tty <target tty path> --baud <target baud rate>
+./build/endpoint --tty <target tty path> --baud <target baud rate> -c <config.json>
 
 # for example
 ./endpoint --tty /dev/ttyS0 --baud 9600

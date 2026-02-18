@@ -13,6 +13,12 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
+/* Maximum MCTP payload available to encapsulated PLDM packets for
+ * MCTP-Serial baseline operation (DSP0236 baseline MTU = 64). */
+#ifndef MCTP_PAYLOAD_MAX
+#define MCTP_PAYLOAD_MAX 64
+#endif
+
 /* Zephyr compatibility: uptime in milliseconds */
 uint32_t k_uptime_get_32(void);
 

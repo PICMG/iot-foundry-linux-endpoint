@@ -17,6 +17,13 @@
 extern "C" {
 #endif
 
+/* Expose PDR repo data getter for debug/inspection */
+const uint8_t *get_pdr_repo_data(size_t *repo_bytes);
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Maximum MCTP payload available to encapsulated PLDM packets for
  * MCTP-Serial baseline operation (DSP0236 baseline MTU = 64). This value
  * represents the available MCTP payload bytes for PLDM and can be overriden
@@ -25,6 +32,9 @@ extern "C" {
 #ifndef MCTP_PAYLOAD_MAX
 #define MCTP_PAYLOAD_MAX 64
 #endif
+
+/* Zephyr compatibility: uptime in milliseconds */
+uint32_t k_uptime_get_32(void);
 
 /* Build timestamp helper: returns a pointer to a 13-byte PLDM TIMESTAMP104
  * value derived from the compile-time __DATE__ and __TIME__ macros.

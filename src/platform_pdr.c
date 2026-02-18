@@ -31,8 +31,7 @@
 #include <libpldm/fru.h>
 #include <libpldm/pdr.h>
 #include <../libpldm/src/control-internal.h>
-#include "pdrs/config.h"
-#include "pdrs/pdr_utils.h"
+#include "config_loader.h"
 #include "mctp_control.h"
 #include "platform.h"
 #include <libpldm/edac.h>
@@ -43,6 +42,63 @@
 #endif
 
 LOG_MODULE_REGISTER(platform_pdr, LOG_LEVEL_DBG);
+
+extern runtime_config_t runtime_config;
+
+#ifndef PDR_HEADER_SIZE
+#define PDR_HEADER_SIZE 10u
+#endif
+
+const uint8_t *get_pdr_repo_data(size_t *repo_bytes)
+{
+	if (repo_bytes) *repo_bytes = 0;
+	if (!runtime_config.loaded || !runtime_config.pdr_data || runtime_config.pdr_data_size == 0) {
+		return NULL;
+	}
+	if (repo_bytes) *repo_bytes = runtime_config.pdr_data_size;
+	return runtime_config.pdr_data;
+}
+
+static bool pdr_read_record_at(const uint8_t *base, size_t repo_bytes, size_t offset,
+				uint32_t *handle, size_t *record_size, uint16_t *payload_len)
+{
+	if (!base || offset + PDR_HEADER_SIZE > repo_bytes) return false;
+
+	uint32_t h = (uint32_t)base[offset] |
+			     ((uint32_t)base[offset + 1] << 8) |
+			     ((uint32_t)base[offset + 2] << 16) |
+			     ((uint32_t)base[offset + 3] << 24);
+	uint16_t len = (uint16_t)base[offset + 8] | ((uint16_t)base[offset + 9] << 8);
+	size_t recsz = (size_t)len + PDR_HEADER_SIZE;
+	if (offset + recsz > repo_bytes) return false;
+
+	if (handle) *handle = h;
+	if (record_size) *record_size = recsz;
+	if (payload_len) *payload_len = len;
+	return true;
+}
+
+static void pdr_calc_stats(const uint8_t *base, size_t repo_bytes,
+			   uint32_t *record_count, uint32_t *max_payload_size)
+{
+	uint32_t count = 0;
+	uint32_t max_len = 0;
+	if (base && repo_bytes >= PDR_HEADER_SIZE) {
+		size_t offset = 0;
+		while (offset + PDR_HEADER_SIZE <= repo_bytes) {
+			size_t recsz = 0;
+			uint16_t len = 0;
+			if (!pdr_read_record_at(base, repo_bytes, offset, NULL, &recsz, &len)) {
+				break;
+			}
+			if (len > max_len) max_len = len;
+			count++;
+			offset += recsz;
+		}
+	}
+	if (record_count) *record_count = count;
+	if (max_payload_size) *max_payload_size = max_len;
+}
 
 /* Helper: compute PLDM transfer CRC over the full record bytes (including
  * the 10-byte per-record header). The PLDM Transfer CRC is defined over
@@ -149,8 +205,8 @@ static void pdr_xfer_free_handle(uint32_t handle)
 }
 
 /**
- * @brief Find a PDR record in the __pdr_data[] array by handle
- * This is a simple linear search through the __pdr_data[] array, which is
+ * @brief Find a PDR record in the runtime PDR repository by handle
+ * This is a simple linear search through the runtime PDR data, which is
  * sufficient for IoT-Foundry endpoints since they have a small number of records. 
  * 
  * @param want_handle The PDR record handle to find, or 0 to get the first record
@@ -166,17 +222,16 @@ static void find_pdr_record_by_handle(uint32_t want_handle, const uint8_t **rec_
 	*rec_ptr = NULL;
 	*rec_size = 0;
 	*next_handle = 0;
-	/* Interpret builder-provided PDR_TOTAL_SIZE as payload-only. The
-	 * actual repository bytes in __pdr_data[] include a 10-byte header
-	 * per record. Compute the true repo byte length here and use it for
-	 * all bounds checks. */
-#include <libmctp.h>
-	const size_t repo_bytes = pdr_repo_bytes();
+	size_t repo_bytes = 0;
+	const uint8_t *base = get_pdr_repo_data(&repo_bytes);
+	if (!base || repo_bytes == 0) {
+		return;
+	}
 
 	while (offset < repo_bytes) {
 		uint32_t handle_v;
 		size_t record_size_v;
-		if (!pdr_read_record_at(offset, &handle_v, &record_size_v)) {
+		if (!pdr_read_record_at(base, repo_bytes, offset, &handle_v, &record_size_v, NULL)) {
 			break; /* malformed or out of bounds */
 #include <libmctp.h>
 		}
@@ -185,12 +240,12 @@ static void find_pdr_record_by_handle(uint32_t want_handle, const uint8_t **rec_
 		if (want_handle == 0) {
 			/* caller wants first record */
 #include <libmctp.h>
-			*rec_ptr = &__pdr_data[offset];
+			*rec_ptr = &base[offset];
 			*rec_size = record_size;
 			/* determine next handle */
 #include <libmctp.h>
 			uint32_t nh = 0;
-			if (pdr_read_record_at(offset + record_size, &nh, NULL)) {
+			if (pdr_read_record_at(base, repo_bytes, offset + record_size, &nh, NULL, NULL)) {
 				*next_handle = nh;
 			} else {
 				*next_handle = 0;
@@ -199,10 +254,10 @@ static void find_pdr_record_by_handle(uint32_t want_handle, const uint8_t **rec_
 		}
 
 		if (handle == want_handle) {
-			*rec_ptr = &__pdr_data[offset];
+			*rec_ptr = &base[offset];
 			*rec_size = record_size;
 			uint32_t nh = 0;
-			if (pdr_read_record_at(offset + record_size, &nh, NULL)) {
+			if (pdr_read_record_at(base, repo_bytes, offset + record_size, &nh, NULL, NULL)) {
 				*next_handle = nh;
 			} else {
 				*next_handle = 0;
@@ -235,12 +290,19 @@ int handle_platform_get_pdr_repository_info(struct pldm_header_info *hdr, const 
 		return PLDM_ERROR_INVALID_DATA;
 	}
 
-	uint32_t record_count = PDR_NUMBER_OF_RECORDS;
-	/* Builder emits PDR_TOTAL_SIZE as payload-only; return the actual
-	 * repository byte length (payload + per-record headers). */
+	uint32_t record_count = runtime_config.loaded ? runtime_config.pdr_record_count : 0;
+	uint32_t largest_record_size = 0;
+	size_t repo_bytes = 0;
+	const uint8_t *base = get_pdr_repo_data(&repo_bytes);
+	if (base && repo_bytes > 0) {
+		uint32_t parsed_count = 0;
+		pdr_calc_stats(base, repo_bytes, &parsed_count, &largest_record_size);
+		if (record_count == 0) {
+			record_count = parsed_count;
+		}
+	}
 #include <libmctp.h>
-	uint32_t repository_size = (uint32_t)pdr_repo_bytes();
-	uint32_t largest_record_size = PDR_MAX_RECORD_SIZE;
+	uint32_t repository_size = (uint32_t)repo_bytes;
 
 	/* encode response. leave update_time/oem_update_time NULL */
 #include <libmctp.h>
@@ -340,7 +402,7 @@ int handle_platform_get_pdr(struct pldm_header_info *hdr, const void *req_msg, s
 		}
 	}
 
-	/* find record data in __pdr_data[] */
+	/* find record data in runtime PDR table */
 #include <libmctp.h>
 	const uint8_t *record_ptr = NULL;
 	size_t record_size = 0;

@@ -17,14 +17,22 @@
 #include <libpldm/edac.h>
 #include <libpldm/pdr.h>
 #include <../libpldm/src/control-internal.h>
-#include "pdrs/config.h"
 #include "mctp_control.h"
 #include "platform.h"
+#include "config_loader.h"
 
 /* TransferOperation flags are provided by libpldm as `PLDM_XFER_*` enums.
  * Use those definitions (PLDM_XFER_FIRST_PART, PLDM_XFER_NEXT_PART, etc.)
  * to match libpldm / DSP0240 semantics for MultipartReceive.
  */
+
+/* FRU transfer flags (DSP0257). Use explicit values since platform flags
+ * use a different encoding.
+ */
+#define PLDM_FRU_TRANSFER_START          0x01
+#define PLDM_FRU_TRANSFER_MIDDLE         0x02
+#define PLDM_FRU_TRANSFER_END            0x04
+#define PLDM_FRU_TRANSFER_START_AND_END  0x05
 
 /* Simple transfer-state table for Get FRU multipart transfers */
 #define FRU_XFER_TABLE_SIZE 6
@@ -36,6 +44,24 @@ struct fru_xfer_entry {
 };
 static struct fru_xfer_entry fru_xfer_table[FRU_XFER_TABLE_SIZE];
 static uint32_t fru_next_handle = 1;
+
+extern runtime_config_t runtime_config;
+
+static bool fru_get_runtime_table(const uint8_t **table, size_t *table_len, uint32_t *record_count)
+{
+	if (table) *table = NULL;
+	if (table_len) *table_len = 0;
+	if (record_count) *record_count = 0;
+
+	if (!runtime_config.loaded || !runtime_config.fru_data || runtime_config.fru_data_size == 0) {
+		return false;
+	}
+
+	if (table) *table = runtime_config.fru_data;
+	if (table_len) *table_len = runtime_config.fru_data_size;
+	if (record_count) *record_count = runtime_config.fru_record_count;
+	return true;
+}
 
 static void fru_xfer_cleanup_expired(void)
 {
@@ -104,32 +130,32 @@ int fru_get_metadata(struct pldm_header_info *hdr, const void *req_msg, size_t r
 		return PLDM_ERROR_INVALID_DATA;
 	}
 
-	/* Retrieve counts/sizes from generated config.h macros */
-#ifdef FRU_NUMBER_OF_RECORDS
-	uint16_t total_table_records = (uint16_t)FRU_NUMBER_OF_RECORDS;
-#else
-	uint16_t total_table_records = 0;
-#endif
-#ifdef FRU_TOTAL_RECORD_SETS
-	uint16_t total_record_set_identifiers = (uint16_t)FRU_TOTAL_RECORD_SETS;
-#else
-	uint16_t total_record_set_identifiers = 0;
-#endif
-#ifdef FRU_MAX_RECORD_SIZE
-	uint32_t fru_table_maximum_size = (uint32_t)FRU_MAX_RECORD_SIZE;
-#else
-	uint32_t fru_table_maximum_size = 0;
-#endif
-#ifdef FRU_TOTAL_SIZE
-	uint32_t fru_table_length = (uint32_t)FRU_TOTAL_SIZE;
-#else
-	uint32_t fru_table_length = 0;
-#endif
+	const uint8_t *table = NULL;
+	size_t table_len = 0;
+	uint32_t record_count = 0;
+	if (!fru_get_runtime_table(&table, &table_len, &record_count)) {
+		PLDM_MSG_BUFFER(msg_buf, MCTP_PAYLOAD_MAX);
+		memset(msg_buf, 0, sizeof(msg_buf));
+		struct pldm_msg *msg = (struct pldm_msg *)msg_buf;
+		int enc = encode_get_fru_record_table_metadata_resp(
+			hdr->instance, PLDM_ERROR_NOT_READY, 0, 0, 0, 0, 0, 0, 0, msg);
+		if (enc != PLDM_SUCCESS) return enc;
+		size_t msg_size = sizeof(struct pldm_msg_hdr) + PLDM_GET_FRU_RECORD_TABLE_METADATA_RESP_BYTES;
+		if (*resp_len < msg_size) return PLDM_ERROR_INVALID_LENGTH;
+		memcpy(resp, msg, msg_size);
+		*resp_len = msg_size;
+		return PLDM_ERROR_NOT_READY;
+	}
+
+	uint16_t total_table_records = (uint16_t)record_count;
+	uint16_t total_record_set_identifiers = (uint16_t)record_count;
+	uint32_t fru_table_maximum_size = (uint32_t)table_len;
+	uint32_t fru_table_length = (uint32_t)table_len;
 
 	/* Compute integrity checksum over the FRU Record Table bytes */
 	uint32_t checksum = 0;
-	if (fru_table_length > 0) {
-		checksum = pldm_edac_crc32((const void *)__fru_data, (size_t)fru_table_length);
+	if (fru_table_length > 0 && table) {
+		checksum = pldm_edac_crc32((const void *)table, (size_t)fru_table_length);
 	}
 
 	/* FRU table data version: builder/runtime convention — use 1.0 */
@@ -189,7 +215,7 @@ int fru_get_record_table(struct pldm_header_info *hdr, const void *req_msg, size
 		PLDM_MSG_BUFFER(msg_buf, MCTP_PAYLOAD_MAX);
 		memset(msg_buf, 0, sizeof(msg_buf));
 		struct pldm_msg *msg = (struct pldm_msg *)msg_buf;
-		int enc = encode_get_fru_record_table_resp(hdr->instance, (uint8_t)rc, 0, PLDM_PLATFORM_TRANSFER_START_AND_END, msg);
+		int enc = encode_get_fru_record_table_resp(hdr->instance, (uint8_t)rc, 0, PLDM_FRU_TRANSFER_START_AND_END, msg);
 		if (enc != PLDM_SUCCESS) return enc;
 		size_t msg_sz = sizeof(struct pldm_msg_hdr) + PLDM_GET_FRU_RECORD_TABLE_MIN_RESP_BYTES;
 		if (*resp_len < msg_sz) return PLDM_ERROR_INVALID_LENGTH;
@@ -198,8 +224,22 @@ int fru_get_record_table(struct pldm_header_info *hdr, const void *req_msg, size
 		return rc;
 	}
 
-	const uint8_t *table = (const uint8_t *)__fru_data;
-	size_t table_len = (size_t)FRU_TOTAL_SIZE;
+	const uint8_t *table = NULL;
+	size_t table_len = 0;
+	uint32_t record_count = 0;
+	if (!fru_get_runtime_table(&table, &table_len, &record_count)) {
+		PLDM_MSG_BUFFER(msg_buf, MCTP_PAYLOAD_MAX);
+		memset(msg_buf, 0, sizeof(msg_buf));
+		struct pldm_msg *msg = (struct pldm_msg *)msg_buf;
+		int enc = encode_get_fru_record_table_resp(hdr->instance, PLDM_ERROR_NOT_READY, 0,
+								  PLDM_FRU_TRANSFER_START_AND_END, msg);
+		if (enc != PLDM_SUCCESS) return enc;
+		size_t msg_sz = sizeof(struct pldm_msg_hdr) + PLDM_GET_FRU_RECORD_TABLE_MIN_RESP_BYTES;
+		if (*resp_len < msg_sz) return PLDM_ERROR_INVALID_LENGTH;
+		memcpy(resp, msg, msg_sz);
+		*resp_len = msg_sz;
+		return PLDM_ERROR_NOT_READY;
+	}
 
 	/* Compute available payload for 'data' (excluding PLDM header and fixed resp fields),
 	 * and reserve 4 bytes for the PLDM DataIntegrityChecksum which must be appended
@@ -212,7 +252,7 @@ int fru_get_record_table(struct pldm_header_info *hdr, const void *req_msg, size
 	size_t avail_data = max_payload - base_overhead - sizeof(uint32_t); /* space for data, excluding PLDM DataIntegrityChecksum */
 
 	uint32_t returned_next_transfer_handle = 0;
-	uint8_t transfer_flag = PLDM_PLATFORM_TRANSFER_START_AND_END;
+	uint8_t transfer_flag = PLDM_FRU_TRANSFER_START_AND_END;
 	size_t transfer_offset = 0;
 	size_t data_len = 0;
 	uint32_t fru_payload_crc = 0; /* FRUDataStructureIntegrityChecksum if appended */
@@ -224,7 +264,7 @@ int fru_get_record_table(struct pldm_header_info *hdr, const void *req_msg, size
 			PLDM_MSG_BUFFER(msg_buf, MCTP_PAYLOAD_MAX);
 			memset(msg_buf, 0, sizeof(msg_buf));
 			struct pldm_msg *msg = (struct pldm_msg *)msg_buf;
-			int enc = encode_get_fru_record_table_resp(hdr->instance, PLDM_FRU_INVALID_TRANSFER_FLAG, 0, PLDM_PLATFORM_TRANSFER_START_AND_END, msg);
+			int enc = encode_get_fru_record_table_resp(hdr->instance, PLDM_FRU_INVALID_TRANSFER_FLAG, 0, PLDM_FRU_TRANSFER_START_AND_END, msg);
 			if (enc != PLDM_SUCCESS) return enc;
 			size_t msg_sz = sizeof(struct pldm_msg_hdr) + PLDM_GET_FRU_RECORD_TABLE_MIN_RESP_BYTES;
 			if (*resp_len < msg_sz) return PLDM_ERROR_INVALID_LENGTH;
@@ -238,7 +278,7 @@ int fru_get_record_table(struct pldm_header_info *hdr, const void *req_msg, size
 		 * MUST NOT append the FRU payload CRC-32 per DSP0257.
 		 */
 		if (table_len <= avail_data) {
-			transfer_flag = PLDM_PLATFORM_TRANSFER_START_AND_END;
+			transfer_flag = PLDM_FRU_TRANSFER_START_AND_END;
 			returned_next_transfer_handle = 0;
 			transfer_offset = 0;
 			data_len = table_len;
@@ -247,7 +287,7 @@ int fru_get_record_table(struct pldm_header_info *hdr, const void *req_msg, size
 			/* multipart: allocate a transfer handle and send the first chunk */
 			uint32_t h = fru_xfer_alloc();
 			if (h == 0) return PLDM_ERROR; /* no resources */
-			transfer_flag = PLDM_PLATFORM_TRANSFER_START;
+			transfer_flag = PLDM_FRU_TRANSFER_START;
 			returned_next_transfer_handle = h;
 			transfer_offset = 0;
 			data_len = avail_data; /* send as much as fits (dataIntegrityChecksum appended separately) */
@@ -265,7 +305,7 @@ int fru_get_record_table(struct pldm_header_info *hdr, const void *req_msg, size
 			PLDM_MSG_BUFFER(msg_buf, MCTP_PAYLOAD_MAX);
 			memset(msg_buf, 0, sizeof(msg_buf));
 			struct pldm_msg *msg = (struct pldm_msg *)msg_buf;
-			int enc = encode_get_fru_record_table_resp(hdr->instance, PLDM_FRU_INVALID_TRANSFER_FLAG, 0, PLDM_PLATFORM_TRANSFER_START_AND_END, msg);
+			int enc = encode_get_fru_record_table_resp(hdr->instance, PLDM_FRU_INVALID_TRANSFER_FLAG, 0, PLDM_FRU_TRANSFER_START_AND_END, msg);
 			if (enc != PLDM_SUCCESS) return enc;
 			size_t msg_sz = sizeof(struct pldm_msg_hdr) + PLDM_GET_FRU_RECORD_TABLE_MIN_RESP_BYTES;
 			if (*resp_len < msg_sz) return PLDM_ERROR_INVALID_LENGTH;
@@ -279,7 +319,7 @@ int fru_get_record_table(struct pldm_header_info *hdr, const void *req_msg, size
 			PLDM_MSG_BUFFER(msg_buf, MCTP_PAYLOAD_MAX);
 			memset(msg_buf, 0, sizeof(msg_buf));
 			struct pldm_msg *msg = (struct pldm_msg *)msg_buf;
-			int enc = encode_get_fru_record_table_resp(hdr->instance, PLDM_FRU_INVALID_DATA_TRANSFER_HANDLE, 0, PLDM_PLATFORM_TRANSFER_START_AND_END, msg);
+			int enc = encode_get_fru_record_table_resp(hdr->instance, PLDM_FRU_INVALID_DATA_TRANSFER_HANDLE, 0, PLDM_FRU_TRANSFER_START_AND_END, msg);
 			if (enc != PLDM_SUCCESS) return enc;
 			size_t msg_sz = sizeof(struct pldm_msg_hdr) + PLDM_GET_FRU_RECORD_TABLE_MIN_RESP_BYTES;
 			if (*resp_len < msg_sz) return PLDM_ERROR_INVALID_LENGTH;
@@ -295,7 +335,7 @@ int fru_get_record_table(struct pldm_header_info *hdr, const void *req_msg, size
 			PLDM_MSG_BUFFER(msg_buf, MCTP_PAYLOAD_MAX);
 			memset(msg_buf, 0, sizeof(msg_buf));
 			struct pldm_msg *msg = (struct pldm_msg *)msg_buf;
-			int enc = encode_get_fru_record_table_resp(hdr->instance, PLDM_SUCCESS, 0, PLDM_PLATFORM_TRANSFER_START_AND_END, msg);
+			int enc = encode_get_fru_record_table_resp(hdr->instance, PLDM_SUCCESS, 0, PLDM_FRU_TRANSFER_START_AND_END, msg);
 			if (enc != PLDM_SUCCESS) return enc;
 			size_t msg_sz = sizeof(struct pldm_msg_hdr) + PLDM_GET_FRU_RECORD_TABLE_MIN_RESP_BYTES;
 			if (*resp_len < msg_sz) return PLDM_ERROR_INVALID_LENGTH;
@@ -310,14 +350,14 @@ int fru_get_record_table(struct pldm_header_info *hdr, const void *req_msg, size
 
 		/* If remaining fits including the pad and FRU payload CRC then this is END */
 		if (remaining + pad_bytes + fru_crc_size <= avail_data) {
-			transfer_flag = PLDM_PLATFORM_TRANSFER_END;
+			transfer_flag = PLDM_FRU_TRANSFER_END;
 			returned_next_transfer_handle = 0;
 			data_len = remaining;
 			/* FRU payload CRC is computed over the entire table */
 			fru_payload_crc = pldm_edac_crc32(table, table_len);
 			fru_xfer_free_handle(e->handle);
 		} else {
-			transfer_flag = PLDM_PLATFORM_TRANSFER_MIDDLE;
+			transfer_flag = PLDM_FRU_TRANSFER_MIDDLE;
 			returned_next_transfer_handle = e->handle;
 			data_len = avail_data;
 			if (data_len > remaining) data_len = remaining;

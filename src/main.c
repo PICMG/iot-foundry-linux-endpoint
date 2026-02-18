@@ -19,11 +19,12 @@
 #include <libmctp.h>
 #include <libmctp-serial.h>
 #include "config.h"
-#include "platform.h"
+#include <platform.h>
 #include "mctp_control.h"
 #include "process_pldm.h"
 #include "msgqueue.h"
 #include "platform.h"
+#include "config_loader.h"
 
 /* MIN macro */
 #ifndef MIN
@@ -37,6 +38,12 @@ config_t serial_device = {
 	.path = "",
 	.fd = -1
 };
+
+/* Global runtime configuration (loaded from JSON) */
+runtime_config_t runtime_config = {0};
+
+/* Global FRU field overrides (from command line) */
+fru_overrides_t fru_overrides = {0};
 
 /* Duplicate of libmctp control header structures/macros.
  * These are intentionally local copies for development/testing when
@@ -260,12 +267,30 @@ static void print_usage(const char *progname)
 	printf("                         Supported: 9600, 19200, 38400, 57600,\n");
 	printf("                                    115200, 230400, 460800, 921600\n");
 	printf("  -f, --flow-control     Enable hardware flow control (RTS/CTS)\n");
+	printf("  -c, --config <file>    JSON configuration file (REQUIRED)\n");
 	printf("  -h, --help             Show this help message\n");
+	printf("\nFRU Field Overrides (override JSON config values):\n");
+	printf("  --fru-manufacturer <string>     Override manufacturer name\n");
+	printf("  --fru-model <string>            Override model number\n");
+	printf("  --fru-serial <string>           Override serial number\n");
+	printf("  --fru-part-number <string>      Override part number\n");
+	printf("  --fru-version <string>          Override version string\n");
+	printf("  --fru-name <string>             Override product/device name\n");
+	printf("  --fru-sku <string>              Override SKU/item number\n");
+	printf("  --fru-asset-tag <string>        Override asset tag\n");
+	printf("  --fru-description <string>      Override description\n");
+	printf("  --fru-fru-file-id <string>      Override FRU file ID\n");
+	printf("  --fru-eng-change <string>       Override engineering change level\n");
+	printf("  --fru-other <string>            Override other information\n");
+	printf("  --fru-mfg-date <string>         Override manufacturing date (YYYY-MM-DD)\n");
+	printf("  --fru-oem-iana <number>         Set OEM vendor IANA number\n");
+	printf("  --fru-oem-field <name:value>    Add OEM-specific field\n");
+	printf("  --fru-custom <type:name:value>  Add custom field (type: string|uint32)\n");
 	printf("\nExamples:\n");
-	printf("  %s -p                      # Create pty for testing\n", progname);
-	printf("  %s -d /dev/ttyUSB0         # Use serial device\n", progname);
-	printf("  %s -d /dev/ttyUSB0 -b 9600 # Use 9600 baud\n", progname);
-	printf("  %s -d /dev/ttyUSB0 -f      # Enable flow control\n", progname);
+	printf("  %s -p -c config.json\n", progname);
+	printf("  %s -p -c config.json --fru-serial DEV-001\n", progname);
+	printf("  %s -p -c config.json --fru-serial SN123 --fru-model Widget-3000\n", progname);
+	printf("  %s -d /dev/ttyUSB0 -c config.json --fru-manufacturer \"ACME Corp\"\n", progname);
 }
 
 /**
@@ -275,26 +300,65 @@ static void print_usage(const char *progname)
 int main(int argc, char *argv[])
 {
 	int opt;
-	int use_pty = 1; // Default to pty
+	const char* json_config_file = NULL;
+	
+	/* Enum for long-only options */
+	enum {
+		OPT_FRU_MANUFACTURER = 1000,
+		OPT_FRU_MODEL,
+		OPT_FRU_SERIAL,
+		OPT_FRU_PART_NUMBER,
+		OPT_FRU_VERSION,
+		OPT_FRU_NAME,
+		OPT_FRU_SKU,
+		OPT_FRU_ASSET_TAG,
+		OPT_FRU_DESCRIPTION,
+		OPT_FRU_FRU_FILE_ID,
+		OPT_FRU_ENG_CHANGE,
+		OPT_FRU_OTHER,
+		OPT_FRU_MFG_DATE,
+		OPT_FRU_OEM_IANA,
+		OPT_FRU_OEM_FIELD,
+		OPT_FRU_CUSTOM
+	};
 	
 	static struct option long_options[] = {
 		{"pty", no_argument, 0, 'p'},
 		{"device", required_argument, 0, 'd'},
 		{"baud", required_argument, 0, 'b'},
 		{"flow-control", no_argument, 0, 'f'},
+		{"config", required_argument, 0, 'c'},
 		{"help", no_argument, 0, 'h'},
+		/* FRU field overrides */
+		{"fru-manufacturer", required_argument, 0, OPT_FRU_MANUFACTURER},
+		{"fru-model", required_argument, 0, OPT_FRU_MODEL},
+		{"fru-serial", required_argument, 0, OPT_FRU_SERIAL},
+		{"fru-part-number", required_argument, 0, OPT_FRU_PART_NUMBER},
+		{"fru-version", required_argument, 0, OPT_FRU_VERSION},
+		{"fru-name", required_argument, 0, OPT_FRU_NAME},
+		{"fru-sku", required_argument, 0, OPT_FRU_SKU},
+		{"fru-asset-tag", required_argument, 0, OPT_FRU_ASSET_TAG},
+		{"fru-description", required_argument, 0, OPT_FRU_DESCRIPTION},
+		{"fru-fru-file-id", required_argument, 0, OPT_FRU_FRU_FILE_ID},
+		{"fru-eng-change", required_argument, 0, OPT_FRU_ENG_CHANGE},
+		{"fru-other", required_argument, 0, OPT_FRU_OTHER},
+		{"fru-mfg-date", required_argument, 0, OPT_FRU_MFG_DATE},
+		{"fru-oem-iana", required_argument, 0, OPT_FRU_OEM_IANA},
+		{"fru-oem-field", required_argument, 0, OPT_FRU_OEM_FIELD},
+		{"fru-custom", required_argument, 0, OPT_FRU_CUSTOM},
 		{0, 0, 0, 0}
 	};
 	
+	/* Initialize FRU overrides */
+	fru_overrides_init(&fru_overrides);
+	
 	// Parse command-line options
-	while ((opt = getopt_long(argc, argv, "pd:b:fh", long_options, NULL)) != -1) {
+	while ((opt = getopt_long(argc, argv, "pd:b:fc:h", long_options, NULL)) != -1) {
 		switch (opt) {
 		case 'p':
-			use_pty = 1;
 			serial_device.path[0] = '\0'; // Empty path signals pty creation
 			break;
 		case 'd':
-			use_pty = 0;
 			strncpy(serial_device.path, optarg, SERIAL_PATH_MAX - 1);
 			serial_device.path[SERIAL_PATH_MAX - 1] = '\0';
 			break;
@@ -304,9 +368,147 @@ int main(int argc, char *argv[])
 		case 'f':
 			serial_device.hwflow = 1;
 			break;
+		case 'c':
+			json_config_file = optarg;
+			break;
 		case 'h':
 			print_usage(argv[0]);
 			return 0;
+		
+		/* FRU field overrides */
+		case OPT_FRU_MANUFACTURER:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].manufacturer = optarg;
+			break;
+		case OPT_FRU_MODEL:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].model = optarg;
+			break;
+		case OPT_FRU_SERIAL:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].serial_number = optarg;
+			break;
+		case OPT_FRU_PART_NUMBER:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].part_number = optarg;
+			break;
+		case OPT_FRU_VERSION:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].version = optarg;
+			break;
+		case OPT_FRU_NAME:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].name = optarg;
+			break;
+		case OPT_FRU_SKU:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].sku = optarg;
+			break;
+		case OPT_FRU_ASSET_TAG:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].asset_tag = optarg;
+			break;
+		case OPT_FRU_DESCRIPTION:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].description = optarg;
+			break;
+		case OPT_FRU_FRU_FILE_ID:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].fru_file_id = optarg;
+			break;
+		case OPT_FRU_ENG_CHANGE:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].engineering_change = optarg;
+			break;
+		case OPT_FRU_OTHER:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].other = optarg;
+			break;
+		case OPT_FRU_MFG_DATE:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].mfg_date = optarg;
+			break;
+		case OPT_FRU_OEM_IANA:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			fru_overrides.overrides[0].oem_iana = (uint32_t)atoi(optarg);
+			break;
+		case OPT_FRU_OEM_FIELD:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			{
+				/* Parse name:value format */
+				char* colon = strchr(optarg, ':');
+				if (colon && fru_overrides.overrides[0].oem_field_count < 16) {
+					int idx = fru_overrides.overrides[0].oem_field_count++;
+					size_t name_len = colon - optarg;
+					strncpy(fru_overrides.overrides[0].oem_fields[idx].name, 
+					        optarg, MIN(name_len, 63));
+					fru_overrides.overrides[0].oem_fields[idx].name[MIN(name_len, 63)] = '\0';
+					strncpy(fru_overrides.overrides[0].oem_fields[idx].value, 
+					        colon + 1, 255);
+					fru_overrides.overrides[0].oem_fields[idx].value[255] = '\0';
+				}
+			}
+			break;
+		case OPT_FRU_CUSTOM:
+			if (fru_overrides.override_count == 0) {
+				fru_overrides.override_count = 1;
+			}
+			{
+				/* Parse type:name:value format */
+				char* first_colon = strchr(optarg, ':');
+				if (first_colon && fru_overrides.overrides[0].custom_field_count < 16) {
+					char* second_colon = strchr(first_colon + 1, ':');
+					if (second_colon) {
+						int idx = fru_overrides.overrides[0].custom_field_count++;
+						size_t type_len = first_colon - optarg;
+						size_t name_len = second_colon - first_colon - 1;
+						
+						strncpy(fru_overrides.overrides[0].custom_fields[idx].type, 
+						        optarg, MIN(type_len, 15));
+						fru_overrides.overrides[0].custom_fields[idx].type[MIN(type_len, 15)] = '\0';
+						
+						strncpy(fru_overrides.overrides[0].custom_fields[idx].name, 
+						        first_colon + 1, MIN(name_len, 63));
+						fru_overrides.overrides[0].custom_fields[idx].name[MIN(name_len, 63)] = '\0';
+						
+						strncpy(fru_overrides.overrides[0].custom_fields[idx].value, 
+						        second_colon + 1, 255);
+						fru_overrides.overrides[0].custom_fields[idx].value[255] = '\0';
+					}
+				}
+			}
+			break;
+		
 		default:
 			print_usage(argv[0]);
 			return 1;
@@ -314,6 +516,41 @@ int main(int argc, char *argv[])
 	}
 	
 	printf("mctp_endpoint: main() start\n");
+
+	// Load JSON configuration (required)
+	if (!json_config_file) {
+		fprintf(stderr, "Error: JSON configuration file required.\n");
+		fprintf(stderr, "Use -c option to specify configuration file.\n");
+		fprintf(stderr, "Example: %s -p -c example-simple-endpoint.json\n", argv[0]);
+		return 1;
+	}
+
+
+	/* Load JSON configuration with FRU overrides */
+	if (config_load_from_json_with_overrides(json_config_file, &runtime_config, &fru_overrides) != 0) {
+		fprintf(stderr, "Failed to load JSON configuration: %s\n", 
+				runtime_config.error_msg);
+		return 1;
+	}
+
+	/* Debug: Print the entire PDR repository binary as hex */
+	{
+		size_t pdr_bytes = 0;
+		const uint8_t *pdr_data = NULL;
+		extern const uint8_t *get_pdr_repo_data(size_t *repo_bytes);
+		pdr_data = get_pdr_repo_data(&pdr_bytes);
+		if (pdr_data && pdr_bytes > 0) {
+			printf("\n==== BEGIN PDR REPOSITORY HEX DUMP (%zu bytes) ====\n", pdr_bytes);
+			for (size_t i = 0; i < pdr_bytes; ++i) {
+				printf("%02X ", pdr_data[i]);
+				if ((i+1) % 16 == 0) printf("\n");
+			}
+			if (pdr_bytes % 16 != 0) printf("\n");
+			printf("==== END PDR REPOSITORY HEX DUMP ====\n\n");
+		} else {
+			printf("[DEBUG] No PDR repository data available.\n");
+		}
+	}
 
 	// Initialize message queue
 	if (msgqueue_init(&echo_q, echo_buffer, sizeof(struct echo_msg), ECHO_Q_DEPTH) != 0) {

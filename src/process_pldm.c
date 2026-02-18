@@ -21,11 +21,9 @@
 #include <libpldm/fru.h>
 #include <libpldm/pdr.h>
 #include <../libpldm/src/control-internal.h>
-#include "pdrs/config.h"
 #include "mctp_control.h"
 #include "platform.h"
-
-#include "pdrs/pdr_utils.h"
+#include "config_loader.h"
 
 #include <errno.h>
 
@@ -40,6 +38,31 @@ static struct pldm_control pldm_control_ctx;
 #define PLDM_RX_BUF_SZ 512
 #endif
 uint8_t pldm_tx_buf[PLDM_RX_BUF_SZ];
+
+/* External runtime_config from main.c */
+extern runtime_config_t runtime_config;
+
+/* Helpers to get PDR data from runtime config only */
+static const uint8_t* get_pdr_data(void) {
+	if (runtime_config.loaded && runtime_config.pdr_data) {
+		return runtime_config.pdr_data;
+	}
+	return NULL;
+}
+
+static size_t get_pdr_size(void) {
+	if (runtime_config.loaded && runtime_config.pdr_data) {
+		return runtime_config.pdr_data_size;
+	}
+	return 0;
+}
+
+static uint32_t get_pdr_record_count(void) {
+	if (runtime_config.loaded && runtime_config.pdr_data) {
+		return runtime_config.pdr_record_count;
+	}
+	return 0;
+}
 
 /**
  * SUPPORTED VERSIONS AND COMMANDS
@@ -403,27 +426,40 @@ int init_pldm() {
 		return -ENOMEM;
 	}
 
-	#ifdef PDR_NUMBER_OF_RECORDS
-	if (PDR_NUMBER_OF_RECORDS > 0) {
-		LOG_INF("Configuring PDRs");
+	/* Use runtime config if loaded, otherwise fall back to static config */
+	const uint8_t* pdr_source = get_pdr_data();
+	size_t pdr_total_size = get_pdr_size();
+	uint32_t pdr_count = get_pdr_record_count();
+
+	if (pdr_source && pdr_count > 0) {
+		LOG_INF("Configuring PDRs from runtime config (%u records)", pdr_count);
 
 		// walk through the PDR data and add each record to the repository
 		size_t offset = 0;
-		while (true) {
-			uint32_t rh = 0;
+		while (offset < pdr_total_size) {
 			size_t record_size = 0;
-			if (!pdr_read_record_at(offset, &rh, &record_size)) break;
-			int rc = pldm_pdr_add(pdr_repo, &__pdr_data[offset], record_size, false, 0x0001, NULL);
+			
+			/* Read record header from the current offset */
+			if (offset + 10 > pdr_total_size) break; // Need at least header
+			
+			/* Parse record header (handle=4, ver=1, type=1, fmt=1, res=1, len=2) */
+			record_size = pdr_source[offset+8] | (pdr_source[offset+9] << 8);
+			record_size += 10; // Include header
+			
+			if (offset + record_size > pdr_total_size) break;
+			
+			int rc = pldm_pdr_add(pdr_repo, &pdr_source[offset], record_size, false, 0x0001, NULL);
 			if (rc != 0) {
 				LOG_ERR("Failed to add PDR record at offset %zu, size %zu: %d", offset, record_size, rc);
 				return rc;
 			}
 			offset += record_size;
-			if (offset >= pdr_repo_bytes()) break;
 		}
-		LOG_INF("PDRs configured successfully");
+		LOG_INF("PDRs configured successfully (%u records, %zu bytes)", pdr_count, pdr_total_size);
+	} else {
+		LOG_ERR("No PDR configuration loaded - JSON config required");
+		return -EINVAL;
 	}
-	#endif
 	return 0;
 }
 

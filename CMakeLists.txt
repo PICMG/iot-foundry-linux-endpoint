@@ -4,6 +4,23 @@ project(iot-foundry-linux-endpoint C)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 
+# Include FetchContent module for downloading cJSON
+include(FetchContent)
+
+# Download and build cJSON library
+FetchContent_Declare(
+    cJSON
+    GIT_REPOSITORY https://github.com/DaveGamble/cJSON.git
+    GIT_TAG        v1.7.18
+)
+
+# Don't build cJSON tests
+set(ENABLE_CJSON_TEST OFF CACHE BOOL "" FORCE)
+set(ENABLE_CJSON_UTILS OFF CACHE BOOL "" FORCE)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)
+
+FetchContent_MakeAvailable(cJSON)
+
 # Build options
 option(PLDM_SUPPORT "Enable PLDM support" ON)
 
@@ -21,6 +38,9 @@ add_compile_definitions(LIBPLDM_ABI_DEPRECATED_UNSAFE=)
 include_directories(
     ${CMAKE_SOURCE_DIR}/include
     ${CMAKE_SOURCE_DIR}/subprojects/libmctp
+    ${CMAKE_SOURCE_DIR}/src/pdr-builder
+    ${CMAKE_SOURCE_DIR}/src/fru-builder
+    ${CMAKE_SOURCE_DIR}/src/json-validator
 )
 
 # libmctp source files (from submodule)
@@ -56,8 +76,10 @@ set(PLATFORM_SOURCES
     ${CMAKE_SOURCE_DIR}/src/platform_numsense.c
     ${CMAKE_SOURCE_DIR}/src/platform_pdr.c
     ${CMAKE_SOURCE_DIR}/src/platform_statesense.c
-    ${CMAKE_SOURCE_DIR}/src/pdrs/config.c
-    ${CMAKE_SOURCE_DIR}/src/pdrs/pdr_utils.c
+    ${CMAKE_SOURCE_DIR}/src/pdr-builder/pdr-builder.c
+    ${CMAKE_SOURCE_DIR}/src/fru-builder/fru-builder.c
+    ${CMAKE_SOURCE_DIR}/src/config_loader.c
+    ${CMAKE_SOURCE_DIR}/src/json-validator/json-validator.c
 )
 
 # Create the endpoint executable
@@ -67,8 +89,11 @@ add_executable(endpoint
     ${LIBPLDM_SOURCES}
 )
 
-# Link pthread library
-target_link_libraries(endpoint pthread)
+# Link pthread and cJSON libraries
+target_link_libraries(endpoint pthread cjson)
+
+# Include cJSON headers
+target_include_directories(endpoint PRIVATE ${cjson_SOURCE_DIR})
 
 # Add PLDM support if enabled
 if(PLDM_SUPPORT)

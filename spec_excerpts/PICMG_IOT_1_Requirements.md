@@ -13,7 +13,7 @@
 | Vprofile | The velocity of the motor in the constant-velocity region of the motion profile | rad/sec |
 | Pfinal | The final position of the motor after completion of the motion. | rad |
 
-**REQ 4.10**:  IIoT Endpoint **shall** implement an MCTP endpoint accessible through the point-topoint communications link.
+**REQ 4.10**:  IIoT Endpoint **shall** implement an MCTP endpoint accessible through the point-to-point communications link.
 
 **REQ 4.20**:  IIoT Endpoint **shall** comply with requirements applicable for simple MCTP Endpoint defined in [DMTF-DSP0236].
 

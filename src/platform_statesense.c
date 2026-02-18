@@ -32,7 +32,6 @@
 #include <libpldm/fru.h>
 #include <libpldm/pdr.h>
 #include <../libpldm/src/control-internal.h>
-#include "pdrs/config.h"
 #include "mctp_control.h"
 
 LOG_MODULE_REGISTER(platform_statesense, LOG_LEVEL_DBG);
