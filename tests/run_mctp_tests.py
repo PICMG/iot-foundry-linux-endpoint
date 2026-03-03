@@ -114,7 +114,7 @@ def parse_frame(data: bytes):
     }
 
 
-def build_mctp_control_request(cmd_code: int, dest: int = 0x00, src: int = 0x01, payload: bytes = b"") -> bytes:
+def build_mctp_control_request(cmd_code: int, dest: int = 0x00, src: int = 0x10, payload: bytes = b"") -> bytes:
     protocol_version = 0x01
     header_version = 0x01
     flags = 0xC8
@@ -156,6 +156,7 @@ def send_and_capture(device: str, frame: bytes, baud: int = 9600, settle: float 
     with serial.Serial(device, baud, timeout=0.01) as ser:
         ser.reset_input_buffer()
         time.sleep(settle)
+        print('  Sending frame:', ' '.join(f"{b:02X}" for b in frame))
         ser.write(frame)
         ser.flush()
         data = bytearray()
@@ -207,9 +208,9 @@ def pretty_print_response(resp: bytes):
 def run(device='/dev/ttyACM0', baud=9600):
     tests = [
         ('SET_ENDPOINT_ID', build_mctp_control_request(0x01, payload=bytes([0x00, 0x08]))),
-        ('GET_ENDPOINT_ID', build_mctp_control_request(0x02)),
-        ('GET_MCTP_VERSION_SUPPORT', build_mctp_control_request(0x04)),
-        ('GET_MESSAGE_TYPE_SUPPORT', build_mctp_control_request(0x05)),
+        ('GET_ENDPOINT_ID', build_mctp_control_request(0x02, dest=0x08)),
+        ('GET_MCTP_VERSION_SUPPORT', build_mctp_control_request(0x04, dest=0x08)),
+        ('GET_MESSAGE_TYPE_SUPPORT', build_mctp_control_request(0x05,dest=0x08)),
     ]
 
     for name, frame in tests:

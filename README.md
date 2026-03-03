@@ -15,38 +15,108 @@ The code and build process in this project relies upon the template code found i
 
 This repository is part of the IoTFoundry family of open source projects.  For more information about IoTFoundry, please visit the main IoTFoundry site at: [https://picmg.github.io/iot-foundry/](https://picmg.github.io/iot-foundry/)
 
-## System Requirements
-The following are system requirements for buidling/testing teh code in this library.
+## Cloning the Repository
 
-- Linux with the gnu toolchain and make tools installed.
+This project uses git submodules for external dependencies. When cloning, use the `--recursive` flag to automatically initialize and update the submodules:
+
+```bash
+git clone --recursive https://github.com/PICMG/iot-foundry-linux-endpoint.git
+```
+
+If you've already cloned the repository without the `--recursive` flag, you can initialize and update the submodules with:
+
+```bash
+git submodule update --init --recursive
+```
+
+To synchronize submodules after pulling changes that update submodule references:
+
+```bash
+git submodule update --recursive
+```
+
+## System Requirements
+The following are system requirements for building/testing the code in this library.
+
+- Linux with the GNU toolchain (GCC) installed
+- CMake 3.15 or higher
 - At least one serial port (e.g. /dev/ttyS0)
-- A serial null-modem cable to connect to remote client.
+- A serial null-modem cable to connect to remote client
+- wget (for downloading IoTFoundry core template)
+- Git (for submodule management)
 
 ## Repository Resources
 
-- `CONRIBUTING.md` — instructions for contributing to this project.
+- `CONTRIBUTING.md` — instructions for contributing to this project.
 - `LICENSE` — The license for this project (MIT)
-- `Makefile` — build, generation and flash recipes.
+- `CMakeLists.txt` — CMake build configuration.
 - `README.md` — this document.
-- `include/` — public headers and generator output (see `include/generated_serial_config.h`).
-  - `include/core` — (template core includes)
+- `include/` — public headers and generator output.
+  - `include/core/` — (template core includes, downloaded during build)
 - `src/` — application and platform C sources
-  - `src/core/` — (template core sources).
+  - `src/core/` — (template core sources, downloaded during build)
+- `subprojects/` — git submodules for external dependencies
+  - `subprojects/libmctp/` — libmctp source files (used directly, not as library)
+  - `subprojects/libpldm/` — PLDM protocol definitions and utilities
 - `tests/` — test scripts and requirements for host-side tests and tooling.
 
 ## Build Flow
 
-This project contains a single makefile recepie to build IoTFoundry Linux endpoint.  This is accomplished with a simple  'make' command:
+This project uses CMake as its build system. The build process automatically downloads the IoTFoundry core template and integrates libmctp source files from the git submodule.
 
+### Building the Project
+
+1. Create a build directory:
+```bash
+mkdir build
+cd build
+```
+
+2. Configure the project with CMake:
+```bash
+cmake ..
+```
+
+3. Build the endpoint:
 ```bash
 make
 ```
 
-## Running device tests
+The compiled `endpoint` binary will be in the `build` directory.
+
+### Build Options
+
+- `PLDM_SUPPORT`: Enable PLDM support (default: ON)
+  ```bash
+  cmake -DPLDM_SUPPORT=OFF ..
+  ```
+
+## Running Device Tests
+
+**Important:** The endpoint requires a JSON configuration file to run. Use the `-c` or `--config` option to specify the configuration file:
+
+```bash
+./build/endpoint -p -c example-simple-endpoint.json
+
+# With serial device
+./endpoint --tty <target tty path> --baud <target baud rate> -c <config.json>
+
+# For example
+./endpoint --tty /dev/ttyS0 --baud 9600 -c my-device-config.json
+```
+
+Example JSON configuration files are provided:
+- `example-simple-endpoint.json` - Basic digital I/O endpoint
+- `example-pid-endpoint.json` - PID controller endpoint
+- `example-profiled-motion-endpoint.json` - Motion control endpoint
+
+See **JSON_CONFIG_QUICKSTART.md** for more details on JSON configuration.
+
+### Running Tests
 
 Start the endpoint code on your unit under test (UUT) with the following command:
 ```bash
-./endpoint --tty <target tty path> --baud <target baud rate>
+./build/endpoint --tty <target tty path> --baud <target baud rate> -c <config.json>
 
 # for example
 ./endpoint --tty /dev/ttyS0 --baud 9600

@@ -1,0 +1,647 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://picmg.org/schemas/iot1-configuration.json",
+  "title": "PICMG IOT.1 Configuration File",
+  "description": "JSON Schema for PICMG IOT.1 R1.00 IIoT Endpoint Configuration Files",
+  "type": "object",
+  "required": ["device", "pins", "channels", "maxFruBytes", "fruRecords", "logicalEntities", "oemStateSets"],
+  "properties": {
+    "device": {
+      "type": "string",
+      "description": "The targeted hardware device for this build"
+    },
+    "pins": {
+      "type": "array",
+      "description": "Array of unique pin names on the device",
+      "items": {
+        "type": "string"
+      }
+    },
+    "channels": {
+      "type": "array",
+      "description": "Array of channels supported by the device",
+      "items": {
+        "$ref": "#/$defs/Channel"
+      }
+    },
+    "maxFruBytes": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Maximum number of bytes of FRU data the device can support"
+    },
+    "fruRecords": {
+      "type": "array",
+      "description": "Array of FRU record objects",
+      "items": {
+        "$ref": "#/$defs/FruRecord"
+      }
+    },
+    "logicalEntities": {
+      "type": "array",
+      "description": "Array of logical entity objects",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/LogicalEntity"
+      }
+    },
+    "oemStateSets": {
+      "type": "array",
+      "description": "Array of OEM state set definitions",
+      "items": {
+        "$ref": "#/$defs/OemStateSet"
+      }
+    }
+  },
+  "$defs": {
+    "Channel": {
+      "type": "object",
+      "required": ["name", "type", "maxValueAtPin", "minValueAtPin", "precision", "accuracy", "pins"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Unique channel identifier"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "digital_in",
+            "analog_in",
+            "count_in",
+            "rate_in",
+            "quadrature_in",
+            "analog_out",
+            "digital_out",
+            "pwm_out",
+            "rate_out",
+            "step_dir_out"
+          ],
+          "description": "Channel electrical interface type"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Optional channel description"
+        },
+        "maxValueAtPin": {
+          "type": "number",
+          "description": "Maximum value at pin (units vary by type)"
+        },
+        "minValueAtPin": {
+          "type": "number",
+          "description": "Minimum value at pin (units vary by type)"
+        },
+        "precision": {
+          "type": "integer",
+          "description": "Precision bits (negative for signed)"
+        },
+        "accuracy": {
+          "type": "number",
+          "description": "Accuracy as percentage (1.0 = 1%)"
+        },
+        "pins": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PinUse"
+          }
+        }
+      }
+    },
+    "PinUse": {
+      "type": "object",
+      "required": ["name", "function"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Pin name matching device pins array"
+        },
+        "function": {
+          "type": "string",
+          "description": "Pin function description"
+        }
+      }
+    },
+    "FruRecord": {
+      "type": "object",
+      "required": ["vendorIANA", "required", "fields"],
+      "properties": {
+        "vendorIANA": {
+          "type": "integer",
+          "description": "Vendor IANA (12634 for PICMG, 412 for DMTF)"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether this FRU record is required"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Optional FRU record description"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/FruField"
+          }
+        }
+      }
+    },
+    "FruField": {
+      "type": "object",
+      "required": ["type", "required", "format"],
+      "properties": {
+        "type": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 255,
+          "description": "Field type per DSP0257 Table 4 (General) or Table 5 (OEM)"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether field is required"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Optional field description"
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "uint8", "sint8", "uint16", "sint16", "uint32", "sint32",
+            "uint64", "sint64", "string", "bool8", "real32", "real64",
+            "timestamp104", "bytes"
+          ],
+          "description": "Data format"
+        },
+        "length": {
+          "type": ["integer", "null"],
+          "description": "Required length for bytes format"
+        },
+        "value": {
+          "description": "Field value (type depends on format)"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "format": { "const": "bytes" }
+            }
+          },
+          "then": {
+            "required": ["length"],
+            "properties": {
+              "length": { "type": "integer", "minimum": 0 }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 1 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Chassis Type" },
+              "format": { "const": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 2 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Model" },
+              "format": { "const": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 3 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Part Number" },
+              "format": { "const": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 4 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Serial Number" },
+              "format": { "const": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 5 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Manufacturer" },
+              "format": { "const": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 6 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Manufacture Date" },
+              "format": { "const": "timestamp104" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 7 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Vendor" },
+              "format": { "const": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 8 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Name" },
+              "format": { "const": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 9 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "SKU" },
+              "format": { "const": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 10 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Version" },
+              "format": { "const": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 11 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Asset Tag" },
+              "format": { "const": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 12 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Description" },
+              "format": { "const": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 13 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Engineering Change Level" },
+              "format": { "const": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 14 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Other Information" },
+              "format": { "const": "string" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 15 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Vendor IANA" },
+              "format": { "const": "uint32" }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "type": { "const": 16 } }
+          },
+          "then": {
+            "properties": {
+              "description": { "const": "Spare Part Number" },
+              "format": { "const": "string" }
+            }
+          }
+        }
+      ]
+    },
+    "LogicalEntity": {
+      "type": "object",
+      "required": ["entityVendorIANA", "vendorEntityID", "name", "required", "ioBindings", "parameters"],
+      "properties": {
+        "entityVendorIANA": {
+          "type": "integer",
+          "description": "Vendor IANA for entity type"
+        },
+        "vendorEntityID": {
+          "type": "integer",
+          "description": "Vendor entity ID (1=Simple, 2=PID, 3=Profiled Motion)"
+        },
+        "name": {
+          "type": "string",
+          "description": "Unique entity instance name"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether entity is required"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Optional entity description"
+        },
+        "ioBindings": {
+          "type": "array",
+          "description": "Array of I/O bindings",
+          "items": {
+            "$ref": "#/$defs/IOBinding"
+          }
+        },
+        "parameters": {
+          "type": "array",
+          "description": "Array of configuration parameters",
+          "items": {
+            "$ref": "#/$defs/Parameter"
+          }
+        }
+      }
+    },
+    "IOBinding": {
+      "type": "object",
+      "required": ["bindingType", "name", "includeInPdr", "required", "isVirtual", "allowedInterfaceTypes"],
+      "properties": {
+        "bindingType": {
+          "type": "string",
+          "enum": ["stateSensor", "stateEffecter", "numericSensor", "numericEffecter"],
+          "description": "Type of I/O binding"
+        },
+        "name": {
+          "type": "string",
+          "description": "Unique binding name within entity"
+        },
+        "includeInPdr": {
+          "type": "boolean",
+          "description": "Whether to generate PDR for this binding"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Whether binding is required"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Optional binding description"
+        },
+        "isVirtual": {
+          "type": "boolean",
+          "description": "Whether binding is virtual (no physical I/O)"
+        },
+        "allowedInterfaceTypes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "digital_in", "analog_in", "count_in", "rate_in", "quadrature_in",
+              "analog_out", "digital_out", "pwm_out", "rate_out", "step_dir_out"
+            ]
+          },
+          "description": "Allowed electrical interface types"
+        },
+        "boundChannel": {
+          "type": ["string", "null"],
+          "description": "Channel name this binding is bound to"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "bindingType": { "enum": ["stateSensor", "stateEffecter"] } }
+          },
+          "then": {
+            "properties": {
+              "sensorID": { "type": ["integer", "null"] },
+              "effecterID": { "type": ["integer", "null"] },
+              "stateSetVendorIANA": { "type": ["integer", "null"] },
+              "stateSet": { "type": ["integer", "null"] },
+              "possibleStates": { "type": "integer", "minimum": 0 },
+              "stateWhenHigh": { "type": ["integer", "null"] },
+              "stateWhenLow": { "type": ["integer", "null"] },
+              "defaultState": { "type": ["integer", "null"] }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "bindingType": { "enum": ["numericSensor", "numericEffecter"] } }
+          },
+          "then": {
+            "properties": {
+              "sensorID": { "type": ["integer", "null"] },
+              "effecterID": { "type": ["integer", "null"] },
+              "sensor": { "type": ["object", "null"] },
+              "effecter": { "type": ["object", "null"] },
+              "inputCurve": {
+                "type": ["array", "null"],
+                "items": { "$ref": "#/$defs/DataPoint" }
+              },
+              "outputCurve": {
+                "type": ["array", "null"],
+                "items": { "$ref": "#/$defs/DataPoint" }
+              },
+              "inputGearingRatio": { "type": ["number", "null"] },
+              "outputGearingRatio": { "type": ["number", "null"] },
+              "physicalBaseUnit": { "type": ["integer", "null"] },
+              "physicalUnitModifier": { "type": ["integer", "null"] },
+              "physicalRateUnit": { "type": ["integer", "null"] },
+              "physicalAuxUnit": { "type": ["integer", "null"] },
+              "physicalAuxUnitModifier": { "type": ["integer", "null"] },
+              "physicalAuxRateUnit": { "type": ["integer", "null"] },
+              "rel": {
+                "type": ["string", "null"],
+                "enum": ["dividedBy", "multipliedBy", null]
+              },
+              "normalMax": { "type": ["number", "null"] },
+              "normalMin": { "type": ["number", "null"] },
+              "upperThresholdWarning": { "type": ["number", "null"] },
+              "upperThresholdCritical": { "type": ["number", "null"] },
+              "upperThresholdFatal": { "type": ["number", "null"] },
+              "lowerThresholdWarning": { "type": ["number", "null"] },
+              "lowerThresholdCritical": { "type": ["number", "null"] },
+              "lowerThresholdFatal": { "type": ["number", "null"] },
+              "physicalDefaultValue": { "type": ["number", "null"] }
+            }
+          }
+        }
+      ]
+    },
+    "DataPoint": {
+      "type": "object",
+      "required": ["in", "out"],
+      "properties": {
+        "in": {
+          "type": "number",
+          "description": "Input value"
+        },
+        "out": {
+          "type": "number",
+          "description": "Output value"
+        }
+      }
+    },
+    "Parameter": {
+      "type": "object",
+      "required": ["parameterType", "name"],
+      "properties": {
+        "parameterType": {
+          "type": "string",
+          "enum": ["integer", "real", "enum"],
+          "description": "Parameter type"
+        },
+        "name": {
+          "type": "string",
+          "description": "Unique parameter name within entity"
+        },
+        "description": {
+          "type": ["string", "null"],
+          "description": "Optional parameter description"
+        },
+        "value": {
+          "description": "Parameter value (type depends on parameterType)"
+        },
+        "defaultValue": {
+          "description": "Default value hint"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": { "parameterType": { "enum": ["integer", "real"] } }
+          },
+          "then": {
+            "properties": {
+              "maxValue": { "type": ["number", "null"] },
+              "minValue": { "type": ["number", "null"] }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "parameterType": { "const": "enum" } }
+          },
+          "then": {
+            "properties": {
+              "choices": {
+                "type": "array",
+                "items": { "type": "string" }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "OemStateSet": {
+      "type": "object",
+      "required": ["name", "vendorName", "vendorIANA", "stateSetID", "oemStateValueRecords"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "State set name"
+        },
+        "vendorName": {
+          "type": "string",
+          "description": "Vendor name responsible for this state set"
+        },
+        "vendorIANA": {
+          "type": "integer",
+          "description": "Vendor IANA enterprise number"
+        },
+        "stateSetID": {
+          "type": "integer",
+          "description": "OEM state set ID"
+        },
+        "oemStateValueRecords": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/OemStateValueRecord"
+          }
+        }
+      }
+    },
+    "OemStateValueRecord": {
+      "type": "object",
+      "required": ["minStateValue", "maxStateValue", "languageTags", "stateName"],
+      "properties": {
+        "minStateValue": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Lowest state enumeration value"
+        },
+        "maxStateValue": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Highest state enumeration value"
+        },
+        "languageTags": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "Language tags per RFC4646"
+        },
+        "stateName": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "State names corresponding to language tags"
+        }
+      }
+    }
+  }
+}
